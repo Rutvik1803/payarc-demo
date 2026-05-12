@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spark Admin — PayArc Applications</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    body { background:#f4f6f9; font-family:'Segoe UI',sans-serif; font-size:14px; }
+    .navbar { background:#0F1B2D; }
+    .breadcrumb { background:transparent; padding:10px 0 4px; font-size:12px; margin-bottom:0; }
+    .breadcrumb-item a { color:#1A6FD4; }
+
+    /* ── Stat cards ── */
+    .stat-card { border:none; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.1); }
+    .stat-card .card-body { padding:16px 20px; }
+    .stat-num  { font-size:28px; font-weight:700; color:#0F1B2D; line-height:1; }
+    .stat-label{ font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:#718096; margin-top:4px; }
+    .stat-icon { font-size:22px; opacity:.3; }
+
+    /* ── Table card ── */
+    .table-card { border:none; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.1); }
+    .table-card .card-header { background:#fff; border-bottom:1px solid #f0f0f0; padding:14px 20px; border-radius:8px 8px 0 0; }
+    .table th { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:#718096; font-weight:700; border-top:none; background:#f8f9fa; }
+    .table td { font-size:13px; vertical-align:middle; }
+    .table tbody tr:hover { background:#f0f7ff; }
+
+    /* ── Status pills ── */
+    .pill { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
+    .pill-pending     { background:#FFF3CD; color:#856404; }
+    .pill-review      { background:#DBF0FF; color:#004B8D; }
+    .pill-approved    { background:#D1FAE5; color:#065F46; }
+    .pill-docs        { background:#FFECD2; color:#92400E; }
+    .pill-rejected    { background:#FEE2E2; color:#991B1B; }
+    .pill-signed      { background:#D1FAE5; color:#065F46; }
+    .pill-unsigned    { background:#FEF3C7; color:#92400E; }
+
+    /* ── Modal ── */
+    .modal-header { background:#0F1B2D; }
+    .api-line { font-family:monospace; font-size:12px; background:#1e2433; color:#e2e8f0; padding:12px 14px; border-radius:6px; line-height:1.8; }
+    .json-key { color:#68D391; }
+    .json-str { color:#FBD38D; }
+    .json-num { color:#90CDF4; }
+
+    /* ── Detail modal sections ── */
+    .detail-row { display:flex; font-size:12px; padding:5px 0; border-bottom:1px solid #f0f0f0; }
+    .detail-row:last-child { border:none; }
+    .detail-label { color:#718096; width:160px; flex-shrink:0; }
+    .detail-val   { color:#1A202C; font-weight:500; }
+
+    /* ── Timeline ── */
+    .timeline { list-style:none; padding:0; margin:0; }
+    .timeline li { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #f5f5f5; font-size:12px; }
+    .timeline li:last-child { border:none; }
+    .tl-icon { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:11px; }
+
+    .filter-bar { background:#fff; border-radius:8px; padding:12px 16px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.06); display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg">
+  <a class="navbar-brand text-white font-weight-bold" href="index.html"><i class="fas fa-bolt mr-1"></i>Spark</a>
+  <div class="ml-auto d-flex align-items-center gap-2">
+    <a href="index.html"       class="btn btn-outline-light btn-sm mr-2"><i class="fas fa-credit-card mr-1"></i>Payment Demo</a>
+    <a href="onboarding.html"  class="btn btn-outline-light btn-sm mr-2"><i class="fas fa-plus mr-1"></i>New Application</a>
+  </div>
+</nav>
+
+<div class="container-fluid px-4 py-3">
+
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#">Admin</a></li>
+      <li class="breadcrumb-item"><a href="#">Settings</a></li>
+      <li class="breadcrumb-item"><a href="#">Payment Gateway</a></li>
+      <li class="breadcrumb-item active">PayArc Merchant Applications</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h4 class="mb-0 font-weight-bold" style="color:#0F1B2D;">
+        <i class="fas fa-store mr-2" style="color:#1A6FD4;"></i>PayArc Merchant Applications
+      </h4>
+      <div style="font-size:12px; color:#718096; margin-top:2px;">
+        All schools applying to become PayArc merchants under Spark Membership's partner account
+      </div>
+    </div>
+    <a href="onboarding.html" class="btn btn-primary btn-sm">
+      <i class="fas fa-plus mr-1"></i>New Application
+    </a>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="row mb-3" id="stat-row"></div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <div style="font-size:12px; font-weight:600; color:#718096;">Filter:</div>
+    <select class="form-control form-control-sm" id="filter-status" style="width:180px;" onchange="renderTable()">
+      <option value="">All Statuses</option>
+      <option value="pending">Pending Review</option>
+      <option value="review">Under Review</option>
+      <option value="docs">Documents Required</option>
+      <option value="approved">Approved</option>
+      <option value="rejected">Rejected</option>
+    </select>
+    <input type="text" class="form-control form-control-sm" id="filter-search" style="width:220px;" placeholder="Search school name..." oninput="renderTable()">
+    <div class="ml-auto" style="font-size:12px; color:#718096;" id="result-count"></div>
+  </div>
+
+  <!-- Table -->
+  <div class="card table-card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <span class="font-weight-bold" style="font-size:14px;">Applications</span>
+      <span style="font-size:12px; color:#718096; font-family:monospace;">
+        Agent token: <span style="color:#F59E0B;">AGENT_BEARER_TOKEN</span> (stored in Spark global config)
+      </span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>School / Merchant</th>
+            <th>MerchantCode</th>
+            <th>Submitted</th>
+            <th>DocuSign</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="app-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+
+<!-- ══════════════════════════════════════════════════
+     STATUS CHECK MODAL
+═══════════════════════════════════════════════════ -->
+<div class="modal fade" id="status-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-white"><i class="fas fa-sync-alt mr-1"></i>Check Application Status</h5>
+        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3" style="font-size:12px; color:#718096;">
+          <strong>API call:</strong>
+          <code style="color:#1A6FD4;">POST /v1/agent-hub/apply/lead-status</code> ·
+          Auth: <code style="color:#F59E0B;">AGENT_BEARER_TOKEN</code>
+        </div>
+        <div class="api-line mb-3" id="status-api-call"></div>
+        <div id="status-result-area"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     DETAIL MODAL
+═══════════════════════════════════════════════════ -->
+<div class="modal fade" id="detail-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-white"><i class="fas fa-store mr-1"></i>Application Details</h5>
+        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body" id="detail-modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script>
+
+// ── Mock applications data ─────────────────────────────────────────────────
+const APPS = [
+  {
+    id: 1, name: 'Chicago Fitness Club', code: 'MC-2026-CFC01',
+    date: '2026-05-10', status: 'pending', signed: true,
+    contact: 'John Smith', email: 'john@chicagofitness.example.com',
+    phone: '3125559021', bank: 'Bank of America', routing: '021000021',
+    monthly: 45000, avg: 120, high: 480, mcc: '7941',
+    pricing: 'BlendedRatePricing', ownership: 'LLC',
+    timeline: [
+      { icon:'fas fa-plus',    bg:'#1A6FD4', lbl:'Application submitted',          time:'May 10, 2026 at 9:14 AM' },
+      { icon:'fas fa-file',    bg:'#718096', lbl:'Documents uploaded (2 files)',    time:'May 10, 2026 at 9:16 AM' },
+      { icon:'fas fa-envelope',bg:'#F59E0B', lbl:'DocuSign email sent to owner',   time:'May 10, 2026 at 9:17 AM' },
+      { icon:'fas fa-pen',     bg:'#1DB87E', lbl:'Owner signed agreement',         time:'May 10, 2026 at 11:42 AM' },
+      { icon:'fas fa-clock',   bg:'#718096', lbl:'Awaiting PayArc underwriting',   time:'May 10, 2026 — Present' },
+    ]
+  },
+  {
+    id: 2, name: 'Austin Yoga Studio', code: 'MC-2026-AYS02',
+    date: '2026-05-06', status: 'review', signed: true,
+    contact: 'Sarah Johnson', email: 'sarah@austinyoga.example.com',
+    phone: '5125550183', bank: 'Wells Fargo', routing: '121000248',
+    monthly: 22000, avg: 85, high: 250, mcc: '7299',
+    pricing: 'TieredPricing', ownership: 'Sole_Proprietor',
+    timeline: [
+      { icon:'fas fa-plus',    bg:'#1A6FD4', lbl:'Application submitted',          time:'May 6, 2026 at 2:05 PM' },
+      { icon:'fas fa-file',    bg:'#718096', lbl:'Documents uploaded (2 files)',    time:'May 6, 2026 at 2:08 PM' },
+      { icon:'fas fa-envelope',bg:'#F59E0B', lbl:'DocuSign email sent to owner',   time:'May 6, 2026 at 2:09 PM' },
+      { icon:'fas fa-pen',     bg:'#1DB87E', lbl:'Owner signed agreement',         time:'May 6, 2026 at 4:55 PM' },
+      { icon:'fas fa-search',  bg:'#004B8D', lbl:'PayArc underwriting started',    time:'May 7, 2026 at 9:00 AM' },
+    ]
+  },
+  {
+    id: 3, name: 'Miami Swim Academy', code: 'MC-2026-MSA03',
+    date: '2026-04-28', status: 'approved', signed: true,
+    contact: 'Carlos Rivera', email: 'carlos@miamiswim.example.com',
+    phone: '3055559847', bank: 'Chase', routing: '267084131',
+    monthly: 68000, avg: 200, high: 800, mcc: '7941',
+    pricing: 'BlendedRatePricing', ownership: 'Corp',
+    clientId: 'CL-MSA-8B3D5E', bearerStored: true,
+    timeline: [
+      { icon:'fas fa-plus',    bg:'#1A6FD4', lbl:'Application submitted',          time:'Apr 28, 2026 at 10:30 AM' },
+      { icon:'fas fa-file',    bg:'#718096', lbl:'Documents uploaded',              time:'Apr 28, 2026 at 10:33 AM' },
+      { icon:'fas fa-pen',     bg:'#1DB87E', lbl:'Owner signed agreement',         time:'Apr 28, 2026 at 3:22 PM' },
+      { icon:'fas fa-search',  bg:'#004B8D', lbl:'PayArc underwriting started',    time:'Apr 29, 2026' },
+      { icon:'fas fa-check',   bg:'#1DB87E', lbl:'PayArc approved application',    time:'May 5, 2026 at 11:00 AM' },
+      { icon:'fas fa-key',     bg:'#6B46C1', lbl:'Bearer Token + Client ID fetched & stored', time:'May 5, 2026 at 11:01 AM' },
+      { icon:'fas fa-bolt',    bg:'#1DB87E', lbl:'Payment gateway LIVE',           time:'May 5, 2026 at 11:01 AM' },
+    ]
+  },
+  {
+    id: 4, name: 'Denver Martial Arts', code: 'MC-2026-DMA04',
+    date: '2026-05-11', status: 'docs', signed: false,
+    contact: 'Mike Chen', email: 'mike@denverma.example.com',
+    phone: '7205551042', bank: 'US Bank', routing: '081000210',
+    monthly: 18000, avg: 95, high: 300, mcc: '7941',
+    pricing: 'InterchangePlusPricing', ownership: 'LLC',
+    timeline: [
+      { icon:'fas fa-plus',    bg:'#1A6FD4', lbl:'Application submitted',          time:'May 11, 2026 at 8:45 AM' },
+      { icon:'fas fa-envelope',bg:'#F59E0B', lbl:'DocuSign email sent to owner',   time:'May 11, 2026 at 8:46 AM' },
+      { icon:'fas fa-exclamation-triangle', bg:'#ED8936', lbl:'PayArc: Additional documents required', time:'May 11, 2026 at 2:00 PM' },
+    ]
+  },
+  {
+    id: 5, name: 'Seattle Dance Studio', code: 'MC-2026-SDS05',
+    date: '2026-04-20', status: 'rejected', signed: true,
+    contact: 'Emma Wilson', email: 'emma@seattledance.example.com',
+    phone: '2065554388', bank: 'Key Bank', routing: '125000574',
+    monthly: 12000, avg: 60, high: 180, mcc: '7299',
+    pricing: 'BlendedRatePricing', ownership: 'Sole_Proprietor',
+    timeline: [
+      { icon:'fas fa-plus',    bg:'#1A6FD4', lbl:'Application submitted',          time:'Apr 20, 2026 at 1:15 PM' },
+      { icon:'fas fa-pen',     bg:'#1DB87E', lbl:'Owner signed agreement',         time:'Apr 20, 2026 at 5:30 PM' },
+      { icon:'fas fa-search',  bg:'#004B8D', lbl:'PayArc underwriting started',    time:'Apr 21, 2026' },
+      { icon:'fas fa-times',   bg:'#E53E3E', lbl:'Application rejected by PayArc', time:'Apr 25, 2026' },
+    ]
+  },
+  {
+    id: 6, name: 'Boston CrossFit', code: 'MC-2026-BCF06',
+    date: '2026-05-12', status: 'pending', signed: false,
+    contact: 'Tom Brady', email: 'tom@bostoncrossfit.example.com',
+    phone: '6175558823', bank: 'Citizens Bank', routing: '011500120',
+    monthly: 55000, avg: 150, high: 600, mcc: '7941',
+    pricing: 'BlendedRatePricing', ownership: 'Corp',
+    timeline: [
+      { icon:'fas fa-plus',    bg:'#1A6FD4', lbl:'Application submitted',          time:'May 12, 2026 at 11:22 AM' },
+      { icon:'fas fa-file',    bg:'#718096', lbl:'Documents uploaded (2 files)',    time:'May 12, 2026 at 11:25 AM' },
+      { icon:'fas fa-envelope',bg:'#F59E0B', lbl:'DocuSign email sent to owner',   time:'May 12, 2026 at 11:26 AM' },
+      { icon:'fas fa-clock',   bg:'#718096', lbl:'Waiting for owner to sign',      time:'May 12, 2026 — Present' },
+    ]
+  },
+];
+
+// ── Status config ──────────────────────────────────────────────────────────
+const STATUS = {
+  pending:  { label:'Pending Review',       cls:'pill-pending',  icon:'fas fa-clock' },
+  review:   { label:'Under Review',         cls:'pill-review',   icon:'fas fa-search' },
+  approved: { label:'Approved ✓',           cls:'pill-approved', icon:'fas fa-check-circle' },
+  docs:     { label:'Documents Required',   cls:'pill-docs',     icon:'fas fa-exclamation-circle' },
+  rejected: { label:'Rejected',             cls:'pill-rejected', icon:'fas fa-times-circle' },
+};
+
+// ── Render stat cards ──────────────────────────────────────────────────────
+function renderStats() {
+  const counts = { total: APPS.length, pending: 0, review: 0, approved: 0, docs: 0, rejected: 0 };
+  APPS.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
+  const cards = [
+    { lbl:'Total Applications', num: counts.total,    color:'#1A6FD4', icon:'fas fa-store' },
+    { lbl:'Pending Review',     num: counts.pending,  color:'#856404', icon:'fas fa-clock' },
+    { lbl:'Under Review',       num: counts.review,   color:'#004B8D', icon:'fas fa-search' },
+    { lbl:'Docs Required',      num: counts.docs,     color:'#92400E', icon:'fas fa-exclamation-circle' },
+    { lbl:'Approved',           num: counts.approved, color:'#065F46', icon:'fas fa-check-circle' },
+    { lbl:'Rejected',           num: counts.rejected, color:'#991B1B', icon:'fas fa-times-circle' },
+  ];
+  document.getElementById('stat-row').innerHTML = cards.map(c => `
+    <div class="col-md-2 col-sm-4 mb-3">
+      <div class="card stat-card">
+        <div class="card-body d-flex align-items-center justify-content-between">
+          <div>
+            <div class="stat-num" style="color:${c.color};">${c.num}</div>
+            <div class="stat-label">${c.lbl}</div>
+          </div>
+          <i class="${c.icon} stat-icon" style="color:${c.color};"></i>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ── Render table ───────────────────────────────────────────────────────────
+function renderTable() {
+  const filterStatus = document.getElementById('filter-status').value;
+  const search       = document.getElementById('filter-search').value.toLowerCase();
+
+  let filtered = APPS.filter(a => {
+    if (filterStatus && a.status !== filterStatus) return false;
+    if (search && !a.name.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  document.getElementById('result-count').textContent = `${filtered.length} of ${APPS.length} applications`;
+
+  const days = d => Math.floor((new Date() - new Date(d)) / 86400000);
+
+  document.getElementById('app-table-body').innerHTML = filtered.map(a => {
+    const st = STATUS[a.status];
+    const signedPill = a.signed
+      ? `<span class="pill pill-signed"><i class="fas fa-pen mr-1"></i>Signed</span>`
+      : `<span class="pill pill-unsigned"><i class="fas fa-clock mr-1"></i>Awaiting</span>`;
+    const approvedExtra = a.status === 'approved' ? `
+      <br><small class="text-muted" style="font-size:10px;">
+        <i class="fas fa-key mr-1" style="color:#1A6FD4;"></i>Bearer Token + Client ID stored
+      </small>` : '';
+    return `
+      <tr>
+        <td>
+          <div class="font-weight-bold">${a.name}</div>
+          <div style="font-size:11px; color:#718096;">${a.contact} · ${a.email}</div>
+        </td>
+        <td><code style="font-size:12px; color:#1A6FD4;">${a.code}</code></td>
+        <td>
+          <div style="font-size:12px;">${new Date(a.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+          <div style="font-size:11px; color:#718096;">${days(a.date)} days ago</div>
+        </td>
+        <td>${signedPill}</td>
+        <td>
+          <span class="pill ${st.cls}"><i class="${st.icon} mr-1"></i>${st.label}</span>
+          ${approvedExtra}
+        </td>
+        <td>
+          <button class="btn btn-outline-primary btn-sm mr-1" onclick="checkStatus(${a.id})" title="Check Status">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+          <button class="btn btn-outline-secondary btn-sm mr-1" onclick="viewDetail(${a.id})" title="View Details">
+            <i class="fas fa-eye"></i>
+          </button>
+          ${!a.signed ? `<a href="docusign-preview.html?name=${encodeURIComponent(a.contact)}&email=${encodeURIComponent(a.email)}&school=${encodeURIComponent(a.name)}" target="_blank" class="btn btn-outline-warning btn-sm" title="Preview DocuSign Email"><i class="fas fa-envelope"></i></a>` : ''}
+        </td>
+      </tr>`;
+  }).join('') || `<tr><td colspan="6" class="text-center text-muted py-4">No applications found.</td></tr>`;
+}
+
+// ── Check Status ───────────────────────────────────────────────────────────
+function checkStatus(id) {
+  const a  = APPS.find(x => x.id === id);
+  if (!a) return;
+
+  document.getElementById('status-api-call').innerHTML =
+    `<span class="json-key">POST</span> https://testapi.payarc.net/v1/agent-hub/apply/lead-status\n` +
+    `Authorization: Bearer <span class="json-str">{AGENT_BEARER_TOKEN}</span>\n\n` +
+    `Body: { <span class="json-key">"MerchantCode"</span>: <span class="json-str">"${a.code}"</span> }`;
+
+  const st = STATUS[a.status];
+  const responses = {
+    pending:  { Status: 'pending',      Message: 'Application received. Awaiting underwriting review.' },
+    review:   { Status: 'under_review', Message: 'Application is currently under underwriting review.' },
+    approved: { Status: 'approved',     Message: 'Application approved. Merchant account active.' },
+    docs:     { Status: 'docs_required',Message: 'Additional documents required. Please upload and resubmit.' },
+    rejected: { Status: 'rejected',     Message: 'Application rejected. Contact PayArc support for details.' },
+  };
+  const resp = responses[a.status];
+
+  const colMap = { pending:'#856404', review:'#004B8D', approved:'#065F46', docs:'#92400E', rejected:'#991B1B' };
+  const bgMap  = { pending:'#FFF3CD', review:'#DBF0FF', approved:'#D1FAE5', docs:'#FFECD2', rejected:'#FEE2E2' };
+
+  document.getElementById('status-result-area').innerHTML = `
+    <div style="font-size:12px; color:#718096; margin-bottom:8px;">Response from PayArc:</div>
+    <div style="background:#f8f9fa; border:1px solid #dee2e6; border-radius:6px; padding:14px; font-family:monospace; font-size:12px; line-height:1.9;">
+      HTTP <span style="color:#1DB87E;">200</span> OK<br>
+      {<br>
+      &nbsp;&nbsp;<span class="json-key">"MerchantCode"</span>: <span class="json-str">"${a.code}"</span>,<br>
+      &nbsp;&nbsp;<span class="json-key">"Status"</span>: <span class="json-str">"${resp.Status}"</span>,<br>
+      &nbsp;&nbsp;<span class="json-key">"Message"</span>: <span class="json-str">"${resp.Message}"</span><br>
+      }
+    </div>
+    <div class="mt-3 d-flex align-items-center gap-3">
+      <span class="pill ${st.cls}"><i class="${st.icon} mr-1"></i>${st.label}</span>
+      ${a.status === 'approved' ? `
+        <div style="font-size:12px; color:#065F46; margin-left:12px;">
+          <i class="fas fa-key mr-1"></i>Spark will auto-call
+          <code>GET /v1/api/token/reveal/{merchant_id}</code> to fetch Bearer Token + Client ID
+        </div>` : ''}
+    </div>
+    ${a.status === 'docs' ? `
+      <div class="alert alert-warning mt-3 py-2" style="font-size:12px;">
+        <i class="fas fa-exclamation-triangle mr-1"></i>
+        Admin must collect additional documents from school and re-upload via
+        <code>POST /v1/agent-hub/apply/add-documents</code>.
+      </div>` : ''}`;
+
+  $('#status-modal').modal('show');
+}
+
+// ── View Detail ────────────────────────────────────────────────────────────
+function viewDetail(id) {
+  const a = APPS.find(x => x.id === id);
+  if (!a) return;
+  const st = STATUS[a.status];
+
+  const tlHtml = a.timeline.map(t => `
+    <li>
+      <div class="tl-icon" style="background:${t.bg}; color:#fff;"><i class="${t.icon}" style="font-size:10px;"></i></div>
+      <div>
+        <div style="font-weight:600; font-size:12px; color:#1A202C;">${t.lbl}</div>
+        <div style="font-size:11px; color:#718096;">${t.time}</div>
+      </div>
+    </li>`).join('');
+
+  const credHtml = a.status === 'approved' ? `
+    <div style="background:#f0fff4; border:1px solid #1DB87E; border-radius:6px; padding:14px 18px; margin-top:16px;">
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#065F46; margin-bottom:10px;">
+        <i class="fas fa-key mr-1"></i>Stored Credentials (t_Settings)
+      </div>
+      <div class="detail-row"><span class="detail-label">payarcMerchantCode</span><span class="detail-val" style="font-family:monospace;">${a.code}</span></div>
+      <div class="detail-row"><span class="detail-label">payarcClientID</span><span class="detail-val" style="font-family:monospace; color:#1A6FD4;">${a.clientId || 'CL-XXX-DEMO'}</span></div>
+      <div class="detail-row"><span class="detail-label">payarcBearerToken</span><span class="detail-val" style="font-family:monospace; color:#F59E0B;">eyJ... (stored encrypted)</span></div>
+      <div class="detail-row"><span class="detail-label">paymentGateway</span><span class="detail-val">payarc</span></div>
+    </div>` : '';
+
+  document.getElementById('detail-modal-body').innerHTML = `
+    <div class="row">
+      <div class="col-md-6">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#718096; margin-bottom:10px;">Application Info</div>
+        <div class="detail-row"><span class="detail-label">School Name</span><span class="detail-val font-weight-bold">${a.name}</span></div>
+        <div class="detail-row"><span class="detail-label">MerchantCode</span><span class="detail-val"><code>${a.code}</code></span></div>
+        <div class="detail-row"><span class="detail-label">Status</span><span class="detail-val"><span class="pill ${st.cls}">${st.label}</span></span></div>
+        <div class="detail-row"><span class="detail-label">Submitted</span><span class="detail-val">${a.date}</span></div>
+        <div class="detail-row"><span class="detail-label">Contact</span><span class="detail-val">${a.contact}</span></div>
+        <div class="detail-row"><span class="detail-label">Email</span><span class="detail-val">${a.email}</span></div>
+        <div class="detail-row"><span class="detail-label">DocuSign Status</span><span class="detail-val">${a.signed ? '✅ Signed' : '⏳ Awaiting signature'}</span></div>
+        <div class="detail-row"><span class="detail-label">MCC Code</span><span class="detail-val">${a.mcc}</span></div>
+        <div class="detail-row"><span class="detail-label">Pricing Model</span><span class="detail-val"><code>${a.pricing}</code></span></div>
+        <div class="detail-row"><span class="detail-label">Monthly Volume</span><span class="detail-val">$${a.monthly.toLocaleString()}</span></div>
+        <div class="detail-row"><span class="detail-label">Avg / High Ticket</span><span class="detail-val">$${a.avg} / $${a.high}</span></div>
+        <div class="detail-row"><span class="detail-label">Bank</span><span class="detail-val">${a.bank}</span></div>
+        ${credHtml}
+      </div>
+      <div class="col-md-6">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#718096; margin-bottom:10px;">Timeline</div>
+        <ul class="timeline">${tlHtml}</ul>
+        ${!a.signed ? `
+          <div class="mt-3">
+            <a href="docusign-preview.html?name=${encodeURIComponent(a.contact)}&email=${encodeURIComponent(a.email)}&school=${encodeURIComponent(a.name)}"
+               target="_blank" class="btn btn-outline-warning btn-sm">
+              <i class="fas fa-envelope mr-1"></i>Preview DocuSign Email
+            </a>
+          </div>` : ''}
+      </div>
+    </div>`;
+
+  $('#detail-modal').modal('show');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+renderStats();
+renderTable();
+</script>
+</body>
+</html>

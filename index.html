@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spark Demo — PayArc Payment</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    body { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; font-size: 14px; }
+    .navbar { background: #0F1B2D; }
+    .card { border: none; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+    .invoice-amount { font-size: 30px; font-weight: 700; color: #0F1B2D; }
+    .status-badge { display:inline-block; padding:3px 12px; border-radius:20px; font-size:12px; font-weight:600; background:#fff3cd; color:#856404; }
+    .modal-header { background: #0F1B2D; }
+    .nav-tabs .nav-link.active { font-weight:600; color:#1A6FD4; border-bottom:2px solid #1A6FD4; }
+
+    #card-token-container { width: 100%; }
+    #card-token-container [data-payarc] {
+      display: block;
+      width: 100%;
+      height: 42px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    #card-token-container [data-payarc] iframe {
+      width: 100% !important;
+      height: 42px !important;
+      border: none;
+    }
+    .half-row { display: flex; gap: 10px; }
+    .half-row [data-payarc] { flex: 1; min-width: 0; }
+
+    .config-alert { background:#fff8e6; border:1px solid #ffc107; border-radius:4px; padding:10px 16px; font-size:13px; margin-bottom:16px; }
+    .token-display { background:#f0fff4; border:1px solid #1DB87E; border-radius:4px; padding:10px; word-break:break-all; font-family:monospace; font-size:12px; margin:8px 0; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg">
+  <a class="navbar-brand text-white font-weight-bold" href="#"><i class="fas fa-bolt mr-1"></i>Spark</a>
+  <div class="ml-auto d-flex align-items-center">
+    <a href="applications.html" class="btn btn-outline-light btn-sm mr-2"><i class="fas fa-list mr-1"></i>Applications</a>
+    <a href="onboarding.html"  class="btn btn-outline-light btn-sm"><i class="fas fa-store mr-1"></i>New Merchant</a>
+  </div>
+</nav>
+
+<div class="container-fluid px-4 py-3">
+
+  <!-- Config alert -->
+  <div class="config-alert" id="config-alert">
+    <i class="fas fa-key mr-1"></i>
+    <strong>Setup:</strong> Enter your PayArc Client ID in the panel on the right, then click Initialize.
+    Get it from <a href="https://testdashboard.payarc.net" target="_blank">testdashboard.payarc.net</a> → Settings → API Keys
+  </div>
+
+  <div class="d-flex align-items-center mb-3">
+    <h5 class="mb-0 font-weight-bold">Invoice #INV-2024-001</h5>
+    <span class="status-badge ml-2">Balance Due</span>
+  </div>
+
+  <div class="row">
+    <!-- Invoice card -->
+    <div class="col-md-8">
+      <div class="card p-4 mb-3">
+        <div class="d-flex justify-content-between align-items-start mb-4">
+          <div>
+            <div class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Member</div>
+            <div class="font-weight-bold">John Smith</div>
+            <div class="text-muted small">john.smith@example.com</div>
+          </div>
+          <div class="text-right">
+            <div class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Amount Due</div>
+            <div class="invoice-amount">$150.00</div>
+          </div>
+        </div>
+
+        <table class="table table-sm">
+          <thead class="thead-light">
+            <tr><th>Description</th><th class="text-right">Amount</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Monthly Membership — Premium Plan</td><td class="text-right">$150.00</td></tr>
+          </tbody>
+          <tfoot>
+            <tr><th class="text-right">Total Due</th><th class="text-right">$150.00</th></tr>
+          </tfoot>
+        </table>
+
+        <div class="text-right mt-2">
+          <button class="btn btn-success" onclick="openPayModal()">
+            <i class="fas fa-credit-card mr-1"></i>Add Payment
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Config panel -->
+    <div class="col-md-4">
+      <div class="card p-3">
+        <h6 class="font-weight-bold mb-3"><i class="fas fa-cog mr-1"></i>PayArc Config</h6>
+        <div class="form-group mb-2">
+          <label class="font-weight-bold" style="font-size:12px;">Client ID</label>
+          <input type="text" id="clientIdInput" class="form-control form-control-sm" placeholder="Paste your Client ID here">
+          <small class="text-muted">From testdashboard.payarc.net → Settings</small>
+        </div>
+        <button class="btn btn-primary btn-sm btn-block mb-2" onclick="initPayarc()">
+          Initialize PayArc iFrame
+        </button>
+        <div id="init-status" style="font-size:12px;"></div>
+
+        <hr class="my-3">
+        <div style="font-size:11px; color:#888;">
+          <div class="font-weight-bold mb-1">Script URL (test)</div>
+          <code style="font-size:10px; word-break:break-all;">https://testportal.payarc.net/js/iframeprocess.js</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAYMENT MODAL  (mirrors Spark's modal-pay structure)
+════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modal-pay" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title text-white"><i class="fas fa-lock mr-1"></i>Add Payment</h5>
+        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Amount row -->
+        <div class="form-group row align-items-center mb-3">
+          <label class="col-sm-3 col-form-label font-weight-bold">Amount</label>
+          <div class="col-sm-4">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+              <input type="number" class="form-control" id="txtCCAmount" value="150.00">
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment method tabs -->
+        <ul class="nav nav-tabs mb-3" id="payTabs" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" data-toggle="tab" href="#tab-cc" onclick="setHowPay('CC')">
+              <i class="fas fa-credit-card mr-1"></i>Credit Card
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#tab-cash" onclick="setHowPay('CASH')">
+              <i class="fas fa-money-bill-wave mr-1"></i>Cash
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#tab-check" onclick="setHowPay('CHECK')">
+              <i class="fas fa-file-alt mr-1"></i>Check
+            </a>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+
+          <!-- ── Credit Card Tab ───────────────────────────── -->
+          <div class="tab-pane fade show active" id="tab-cc">
+
+            <!-- Not initialized warning -->
+            <div id="payarc-not-init" class="alert alert-warning py-2" style="font-size:13px;">
+              <i class="fas fa-exclamation-triangle mr-1"></i>
+              PayArc iFrame not initialized. Enter your Client ID in the config panel first.
+            </div>
+
+            <!-- Saved cards dropdown (mirrors Spark's ddlExistingCards) -->
+            <div id="payarc-fields" style="display:none;">
+              <div class="form-group">
+                <label class="font-weight-bold" style="font-size:12px;">Card on File</label>
+                <select class="form-control form-control-sm" id="ddlExistingCards" onchange="onCardSelect()">
+                  <option value="">— Enter new card —</option>
+                  <option value="pm_001" data-last4="4242" data-brand="Visa"       data-exp="12/27">Visa ending in 4242 — exp 12/27</option>
+                  <option value="pm_002" data-last4="5555" data-brand="Mastercard" data-exp="09/26">Mastercard ending in 5555 — exp 09/26</option>
+                  <option value="pm_003" data-last4="0005" data-brand="Amex"       data-exp="03/28">Amex ending in 0005 — exp 03/28</option>
+                </select>
+              </div>
+
+              <!-- Saved card summary shown when card on file is selected -->
+              <div id="saved-card-summary" class="mb-3" style="display:none;">
+                <div style="background:#f0fff4; border:1px solid #1DB87E; border-radius:4px; padding:10px 14px; font-size:13px;">
+                  <i class="fas fa-check-circle text-success mr-2"></i>
+                  Charging saved card: <strong id="saved-card-label"></strong>
+                </div>
+              </div>
+
+              <!-- New card fields — hidden when saved card is selected -->
+              <div id="new-card-fields">
+              <div class="form-group">
+                <label class="font-weight-bold" style="font-size:12px;">Name on Card</label>
+                <input type="text" class="form-control form-control-sm" id="nameOnCard" placeholder="John Smith">
+              </div>
+
+              <label class="font-weight-bold" style="font-size:12px;">Card Details</label>
+              <!-- PayArc iFrame Container — exact structure from PayArc docs -->
+              <div id="card-token-container">
+                <div id="credit-card-number" data-payarc="CARD_NUMBER" data-placeholder="Card Number"></div>
+                <div style="display:flex; gap:10px;">
+                  <div id="credit-card-exp" data-payarc="EXP" data-placeholder="MM/YY" style="flex:1;"></div>
+                  <div id="credit-card-cvv" data-payarc="CVV" data-placeholder="CVV" style="flex:1;"></div>
+                </div>
+                <div id="credit-card-zip" data-payarc="ZIP" data-placeholder="ZIP Code"></div>
+              </div>
+
+              <div id="form-status" class="text-danger mt-1" style="font-size:12px;"></div>
+
+              <div class="custom-control custom-checkbox mt-3" id="save-card-row">
+                <input type="checkbox" class="custom-control-input" id="chkSaveCard">
+                <label class="custom-control-label small" for="chkSaveCard">Save card for future payments</label>
+              </div>
+              </div><!-- /new-card-fields -->
+            </div><!-- /payarc-fields -->
+          </div>
+
+          <!-- ── Cash Tab ─────────────────────────────────── -->
+          <div class="tab-pane fade" id="tab-cash">
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">Cash Amount</label>
+              <div class="col-sm-4">
+                <div class="input-group input-group-sm">
+                  <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+                  <input type="number" class="form-control" value="150.00">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Check Tab ────────────────────────────────── -->
+          <div class="tab-pane fade" id="tab-check">
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">Check Number</label>
+              <div class="col-sm-4">
+                <input type="text" class="form-control form-control-sm" placeholder="e.g. 1042">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /modal-body -->
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <!-- Hidden button — PayArc wires to this via INITIATE_PAYMENT setting -->
+        <button id="initiate-payment" style="display:none;">pay</button>
+        <!-- Visible Pay Now button -->
+        <button class="btn btn-primary" id="btnPay2" onclick="pay2()">
+          <i class="fas fa-lock mr-1"></i>Pay Now
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- PayArc iFrame custom styles — injected into each field iFrame via postMessage -->
+<style id="payarc-styles">
+  body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+  .payarc-input-container { width: 100%; }
+  .payarc-input {
+    width: 100%;
+    height: 36px;
+    padding: 6px 10px;
+    font-size: 14px;
+    color: #212529;
+    background: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .payarc-input:focus { border-color: #1A6FD4; box-shadow: 0 0 0 2px rgba(26,111,212,0.15); }
+  .payarc-label { display: none; }
+</style>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script src="https://testportal.payarc.net/js/iframeprocess.js" defer></script>
+<script>
+
+  let payarcReady    = false;
+  let payarcInited   = false;   // ensure initPayarcTokenizer runs only once
+  let howPay         = 'CC';
+
+
+  const PAYARC_SETTINGS = {
+    FORM_STATUS:      'form-status',
+    INITIATE_PAYMENT: 'initiate-payment',  // hidden btn PayArc wires to
+    FIELDS_CONTAINER: 'card-token-container',
+    TOKEN_CALLBACK: {
+      success: (obj) => {
+        const response = JSON.parse(obj.response);
+        payarcTokenHandler(response);
+      },
+      error: (obj) => {
+        $('#form-status').text(`Error ${obj.status}: ${obj.statusText}`);
+        resetPayBtn();
+      },
+      paymentWindowClosed: () => { resetPayBtn(); }
+    }
+  };
+
+  // Client ID must be entered manually in the config panel
+
+  // ── Initialize button ─────────────────────────────────────────────────────
+  function initPayarc() {
+    const clientId = $('#clientIdInput').val().trim();
+    if (!clientId) {
+      $('#init-status').html('<span class="text-danger">Enter Client ID first</span>');
+      return;
+    }
+    payarcReady = true;
+    $('#init-status').html('<span class="text-success"><i class="fas fa-check-circle mr-1"></i>Ready — click Add Payment</span>');
+    $('#config-alert').fadeOut();
+  }
+
+  // ── Modal shown — call initPayarcTokenizer once (script already loaded) ──
+  $('#modal-pay').on('shown.bs.modal', function () {
+    if (!payarcReady) return;
+    $('#payarc-not-init').hide();
+    $('#payarc-fields').show();
+    if (payarcInited) return;
+    try {
+      initPayarcTokenizer($('#clientIdInput').val().trim(), PAYARC_SETTINGS);
+      payarcInited = true;
+    } catch(e) {
+      $('#form-status').text('Init error: ' + e.message);
+    }
+  });
+
+  function openPayModal() {
+    $('#txtCCAmount').val('150.00');
+    $('#modal-pay').modal('show');
+  }
+
+  function setHowPay(method) { howPay = method; }
+
+  // ── Saved card dropdown (mirrors Spark's ddlExistingCards handler) ────────
+  function onCardSelect() {
+    const sel    = document.getElementById('ddlExistingCards');
+    const opt    = sel.options[sel.selectedIndex];
+    const val    = sel.value;
+
+    if (val) {
+      // Saved card selected — hide iFrame, show summary
+      $('#new-card-fields').slideUp(150);
+      $('#save-card-row').hide();
+      const label = opt.getAttribute('data-brand') + ' ending in ' +
+                    opt.getAttribute('data-last4') + ' — exp ' +
+                    opt.getAttribute('data-exp');
+      $('#saved-card-label').text(label);
+      $('#saved-card-summary').slideDown(150);
+    } else {
+      // "Enter new card" selected — show iFrame, hide summary
+      $('#new-card-fields').slideDown(150);
+      $('#save-card-row').show();
+      $('#saved-card-summary').slideUp(150);
+    }
+  }
+
+  // ── Pay Now (saved card OR new card via PayArc iFrame) ───────────────────
+  function pay2() {
+    if (howPay !== 'CC') { handleNonCard(); return; }
+
+    const savedCardId = $('#ddlExistingCards').val();
+
+    // Saved card path — mirrors Spark's chargePaymentMethod()
+    if (savedCardId) {
+      const opt   = $('#ddlExistingCards option:selected');
+      const brand = opt.data('brand');
+      const last4 = opt.data('last4');
+      const exp   = opt.data('exp');
+      $('#btnPay2').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>Processing...');
+      setTimeout(() => {
+        $('#modal-pay').modal('hide');
+        resetPayBtn();
+        Swal.fire({
+          title: 'Payment Approved',
+          html: `<div style="text-align:left;font-size:13px;">
+            <p><i class="fas fa-check-circle" style="color:#1DB87E"></i> Charged saved card successfully.</p>
+            <div style="background:#f8f9fa;border-radius:4px;padding:10px;border:1px solid #dee2e6;font-size:12px;">
+              <b>Card:</b> ${brand} ending in ${last4}<br>
+              <b>Expiry:</b> ${exp}<br>
+              <b>Amount:</b> $${$('#txtCCAmount').val()}<br>
+              <b>Payment Method ID:</b> ${savedCardId}
+            </div>
+            <p class="text-muted mt-2 mb-0" style="font-size:11px;">
+              In production: backend calls PayArc API with saved Customer ID — no re-tokenization needed.
+            </p></div>`,
+          icon: 'success', confirmButtonColor: '#1DB87E'
+        });
+      }, 800);
+      return;
+    }
+
+    // New card path — PayArc iFrame tokenization
+    if (!payarcReady || !payarcInited) {
+      Swal.fire('Not Ready', 'Initialize PayArc first, then open Add Payment.', 'warning');
+      return;
+    }
+    $('#btnPay2').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>Processing...');
+    getPayarcToken(document.getElementById('initiate-payment'));
+  }
+
+  // ── Token received (mirrors Spark's stripeTokenHandler pattern) ──────────
+  function payarcTokenHandler(response) {
+    $('#modal-pay').modal('hide');
+    resetPayBtn();
+
+    // In production: POST token to backend (Register.ashx equivalent)
+    // $.ajax({ url: 'api/payarc-charge', data: { cardToken: response.token, amount: ... } })
+
+    Swal.fire({
+      title: 'Payment Authorized',
+      html: `
+        <div style="text-align:left; font-size:13px;">
+          <p><i class="fas fa-check-circle" style="color:#1DB87E"></i> PayArc token received successfully.</p>
+          <div style="background:#f8f9fa; border-radius:4px; padding:10px; word-break:break-all;
+                      font-family:monospace; font-size:11px; border:1px solid #dee2e6; margin-bottom:10px;">
+            <strong>Token:</strong> ${response.token}
+          </div>
+          <p class="text-muted mb-0" style="font-size:12px;">
+            Next step (backend): POST this token to the PayArc API to charge $${$('#txtCCAmount').val()}.
+          </p>
+        </div>`,
+      icon: 'success',
+      confirmButtonText: 'Done',
+      confirmButtonColor: '#1DB87E'
+    });
+  }
+
+  function handleNonCard() {
+    $('#modal-pay').modal('hide');
+    Swal.fire('Recorded', howPay + ' payment of $' + $('#txtCCAmount').val() + ' recorded.', 'success');
+  }
+
+  function resetPayBtn() {
+    $('#btnPay2').prop('disabled', false).html('<i class="fas fa-lock mr-1"></i>Pay Now');
+  }
+
+</script>
+</body>
+</html>

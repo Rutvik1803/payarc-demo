@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DocuSign Email Preview</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    body { background:#f0f0f0; font-family:'Segoe UI', Arial, sans-serif; }
+
+    /* ── Email client chrome ── */
+    .email-client { max-width:700px; margin:0 auto; padding:20px 0 40px; }
+    .email-client-bar {
+      background:#fff; border-radius:8px 8px 0 0; padding:14px 20px;
+      border:1px solid #ddd; border-bottom:none;
+      display:flex; align-items:center; gap:8px;
+    }
+    .dot { width:12px; height:12px; border-radius:50%; display:inline-block; }
+    .email-toolbar {
+      background:#f8f8f8; border:1px solid #ddd; border-bottom:none;
+      padding:8px 20px; font-size:12px; color:#555;
+      display:flex; gap:16px; align-items:center;
+    }
+    .email-toolbar a { color:#555; text-decoration:none; }
+    .email-toolbar a:hover { color:#333; }
+
+    /* ── Email header ── */
+    .email-header {
+      background:#fff; border:1px solid #ddd; border-bottom:none;
+      padding:16px 20px;
+    }
+    .email-subject { font-size:18px; font-weight:600; color:#222; margin-bottom:12px; }
+    .email-meta { font-size:12px; color:#666; line-height:1.9; }
+    .email-meta strong { color:#333; }
+
+    /* ── Email body ── */
+    .email-body {
+      background:#fff; border:1px solid #ddd; padding:0;
+      border-radius:0 0 8px 8px;
+    }
+
+    /* ── DocuSign email content ── */
+    .ds-wrap { max-width:600px; margin:0 auto; padding:28px 32px 32px; }
+
+    /* DocuSign logo bar */
+    .ds-logo-bar {
+      background:#fff; border-bottom:3px solid #26B35A;
+      padding:14px 0 12px; margin-bottom:24px; text-align:center;
+    }
+    .ds-logo { display:inline-flex; align-items:center; gap:8px; }
+    .ds-logo-icon {
+      background:#26B35A; color:#fff; font-weight:900; font-size:16px;
+      width:32px; height:32px; border-radius:4px; display:flex;
+      align-items:center; justify-content:center; letter-spacing:-1px;
+    }
+    .ds-logo-text { font-size:20px; font-weight:700; color:#1A1A1A; letter-spacing:-.5px; }
+
+    .ds-heading {
+      font-size:22px; font-weight:700; color:#1A1A1A; text-align:center;
+      margin-bottom:8px; line-height:1.3;
+    }
+    .ds-subheading { font-size:14px; color:#555; text-align:center; margin-bottom:28px; }
+
+    .ds-sender-box {
+      background:#f5f5f5; border:1px solid #e0e0e0; border-radius:6px;
+      padding:14px 18px; margin-bottom:22px; font-size:13px;
+    }
+    .ds-sender-label { font-size:11px; text-transform:uppercase; color:#888; letter-spacing:.5px; margin-bottom:3px; }
+    .ds-sender-name  { font-weight:700; color:#222; font-size:14px; }
+    .ds-sender-org   { color:#555; }
+
+    .ds-message-box {
+      background:#fff9f0; border-left:4px solid #F59E0B;
+      padding:12px 16px; margin-bottom:24px; font-size:13px;
+      color:#444; line-height:1.6; border-radius:0 6px 6px 0;
+    }
+
+    .ds-doc-row {
+      display:flex; align-items:center; gap:14px;
+      border:1px solid #e0e0e0; border-radius:6px; padding:14px 18px;
+      margin-bottom:28px; background:#fafafa;
+    }
+    .ds-doc-icon { font-size:28px; color:#26B35A; }
+    .ds-doc-name { font-weight:700; color:#222; font-size:14px; }
+    .ds-doc-meta { font-size:11px; color:#888; margin-top:2px; }
+
+    .ds-btn-wrap { text-align:center; margin-bottom:28px; }
+    .ds-btn {
+      display:inline-block; background:#26B35A; color:#fff !important;
+      font-size:16px; font-weight:700; padding:14px 44px;
+      border-radius:4px; text-decoration:none !important; letter-spacing:.3px;
+      border:none; cursor:pointer;
+    }
+    .ds-btn:hover { background:#1e9449; color:#fff !important; }
+
+    .ds-alt-link {
+      text-align:center; font-size:12px; color:#888; margin-bottom:24px;
+    }
+    .ds-alt-link a { color:#26B35A; }
+
+    .ds-divider { border:none; border-top:1px solid #e8e8e8; margin:20px 0; }
+
+    .ds-security {
+      background:#f8f8f8; border:1px solid #e8e8e8; border-radius:4px;
+      padding:12px 16px; font-size:12px; color:#666; margin-bottom:20px;
+    }
+    .ds-security-label { font-weight:700; color:#444; margin-bottom:4px; }
+    .ds-security-code  { font-family:monospace; font-size:14px; color:#222; letter-spacing:2px; }
+
+    .ds-footer {
+      font-size:11px; color:#aaa; line-height:1.7; text-align:center;
+    }
+    .ds-footer a { color:#aaa; }
+
+    /* ── Preview banner ── */
+    .preview-banner {
+      background:#0F1B2D; color:#fff; padding:10px 20px; font-size:12px;
+      text-align:center; border-radius:8px 8px 0 0;
+    }
+    .preview-banner a { color:#90CDF4; }
+
+    /* ── Note bar ── */
+    .note-bar {
+      background:#EAF2FF; border:1px solid #1A6FD4; border-radius:6px;
+      padding:10px 16px; font-size:12px; color:#1A202C; margin-bottom:16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="email-client">
+
+  <div class="note-bar mt-3 mx-2">
+    <i class="fas fa-info-circle mr-1" style="color:#1A6FD4;"></i>
+    <strong>Demo preview only.</strong> This is what the DocuSign notification email looks like when PayArc calls
+    <code>POST /v1/agent-hub/apply/submit-for-signature</code> with <code>generate_form=true</code>.
+    The real email is sent by DocuSign to the owner's email address automatically — no manual action needed from Spark.
+    <a href="onboarding.html" style="color:#1A6FD4;">← Back to wizard</a>
+  </div>
+
+  <!-- Email client chrome -->
+  <div class="email-client-bar">
+    <span class="dot" style="background:#FF5F57;"></span>
+    <span class="dot" style="background:#FFBD2E;"></span>
+    <span class="dot" style="background:#28CA41;"></span>
+    <span style="margin-left:8px; font-size:13px; color:#888; font-weight:600;">Mail</span>
+  </div>
+
+  <div class="email-toolbar">
+    <a href="#"><i class="fas fa-arrow-left mr-1"></i>Inbox</a>
+    <a href="#"><i class="fas fa-reply mr-1"></i>Reply</a>
+    <a href="#"><i class="fas fa-trash mr-1"></i>Delete</a>
+    <span style="margin-left:auto; color:#aaa;">1 of 1</span>
+  </div>
+
+  <!-- Email header -->
+  <div class="email-header">
+    <div class="email-subject" id="email-subject">Please DocuSign: PayArc Merchant Agreement — Chicago Fitness Club</div>
+    <div class="email-meta">
+      <div><strong>From:</strong> DocuSign System Message &lt;dse_NA3@docusign.net&gt;</div>
+      <div><strong>To:</strong> <span id="email-to">john.smith@chicagofitness.example.com</span></div>
+      <div><strong>Date:</strong> <span id="email-date">May 12, 2026 at 2:34 PM</span></div>
+      <div><strong>On behalf of:</strong> PayArc (noreply@payarc.net)</div>
+    </div>
+  </div>
+
+  <!-- Email body -->
+  <div class="email-body">
+    <div class="ds-logo-bar">
+      <div class="ds-logo">
+        <div class="ds-logo-icon">DS</div>
+        <div class="ds-logo-text">DocuSign</div>
+      </div>
+    </div>
+
+    <div class="ds-wrap">
+
+      <div class="ds-heading" id="ds-heading">
+        <span id="owner-name">John Smith</span>, please review &amp; sign this document
+      </div>
+      <div class="ds-subheading">
+        PayArc has sent you a document to review and sign electronically
+      </div>
+
+      <!-- Sender info -->
+      <div class="ds-sender-box">
+        <div class="ds-sender-label">Document sent by</div>
+        <div class="ds-sender-name">PayArc (via Spark Membership)</div>
+        <div class="ds-sender-org">noreply@payarc.net</div>
+      </div>
+
+      <!-- Message -->
+      <div class="ds-message-box" id="ds-message">
+        Dear <strong id="msg-owner">John Smith</strong>,<br><br>
+        Please review and sign the <strong>PayArc Merchant Agreement</strong> for
+        <strong id="msg-school">Chicago Fitness Club</strong>.
+        This agreement enables your school to process card payments through the PayArc platform.
+        <br><br>
+        Please sign at your earliest convenience to proceed with the merchant account setup.
+      </div>
+
+      <!-- Document row -->
+      <div class="ds-doc-row">
+        <div class="ds-doc-icon"><i class="fas fa-file-signature"></i></div>
+        <div>
+          <div class="ds-doc-name" id="doc-name">PayArc Merchant Agreement — Chicago Fitness Club</div>
+          <div class="ds-doc-meta">1 document · 1 signer · Expires in 30 days</div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="ds-btn-wrap">
+        <a href="#" class="ds-btn" onclick="simulateSign(event)">
+          <i class="fas fa-pen mr-2"></i>REVIEW DOCUMENT
+        </a>
+      </div>
+      <div class="ds-alt-link">
+        If the button doesn't work, copy and paste this link:<br>
+        <a href="#">https://app.docusign.com/sign/8f3a2c1d-4e5b-6f7a-8b9c-0d1e2f3a4b5c</a>
+      </div>
+
+      <hr class="ds-divider">
+
+      <!-- Security code -->
+      <div class="ds-security">
+        <div class="ds-security-label"><i class="fas fa-shield-alt mr-1" style="color:#26B35A;"></i>DocuSign Security Code</div>
+        <div class="ds-security-code" id="security-code">CF2A-8B3D-5E1F</div>
+        <div style="margin-top:4px; font-size:11px; color:#aaa;">Use this code to verify document authenticity in the DocuSign portal</div>
+      </div>
+
+      <hr class="ds-divider">
+
+      <div class="ds-footer">
+        This email was sent by DocuSign on behalf of PayArc.<br>
+        Do not share this email. You are receiving this email because PayArc submitted your information for electronic signing.<br><br>
+        <a href="#">Privacy Policy</a> · <a href="#">Terms of Service</a> · <a href="#">Help</a><br>
+        DocuSign Inc., 221 Main Street, Suite 1000, San Francisco, CA 94105<br>
+        © 2026 DocuSign Inc. All rights reserved.
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Sign simulation modal -->
+<div class="modal fade" id="sign-modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#26B35A;">
+        <h5 class="modal-title text-white"><i class="fas fa-file-signature mr-1"></i>DocuSign — Review &amp; Sign</h5>
+        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <i class="fas fa-check-circle" style="font-size:50px; color:#26B35A; margin-bottom:16px; display:block;"></i>
+        <h5 class="font-weight-bold">Document Signed Successfully</h5>
+        <p class="text-muted" style="font-size:13px;">The merchant agreement has been signed.</p>
+        <div style="background:#f8f9fa; border-radius:6px; padding:12px 16px; font-size:12px; text-align:left; font-family:monospace; color:#333; border:1px solid #dee2e6;">
+          <div>DocuSign Envelope ID: 8f3a2c1d-4e5b-6f7a-8b9c-0d1e2f3a4b5c</div>
+          <div style="color:#26B35A; margin-top:4px;">Status: Completed</div>
+          <div style="margin-top:8px; color:#718096; font-family:'Segoe UI', sans-serif; font-size:11px;">
+            → PayArc's return_url is called with <code>?event=signing_complete</code><br>
+            → Spark backend marks application as "Signed — Awaiting Underwriting"
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a href="applications.html" class="btn btn-success">View Application Status <i class="fas fa-arrow-right ml-1"></i></a>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Read URL params
+  const params  = new URLSearchParams(window.location.search);
+  const name    = params.get('name')   || 'John Smith';
+  const email   = params.get('email')  || 'john.smith@chicagofitness.example.com';
+  const school  = params.get('school') || 'Chicago Fitness Club';
+
+  document.getElementById('email-subject').textContent  = `Please DocuSign: PayArc Merchant Agreement — ${school}`;
+  document.getElementById('email-to').textContent       = email;
+  document.getElementById('owner-name').textContent     = name;
+  document.getElementById('msg-owner').textContent      = name;
+  document.getElementById('msg-school').textContent     = school;
+  document.getElementById('doc-name').textContent       = `PayArc Merchant Agreement — ${school}`;
+  document.getElementById('email-date').textContent     = new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) + ' at ' + new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+
+  function simulateSign(e) {
+    e.preventDefault();
+    $('#sign-modal').modal('show');
+  }
+</script>
+</body>
+</html>
