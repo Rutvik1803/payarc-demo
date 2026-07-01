@@ -29,9 +29,11 @@
     }
     .step-item.active .step-circle { background:#1A6FD4; color:#fff; box-shadow:0 0 0 4px rgba(26,111,212,.2); }
     .step-item.done   .step-circle { background:#1DB87E; color:#fff; }
+    .step-item.skipped .step-circle { background:#adb5bd; color:#fff; }
     .step-label { font-size:10px; margin-top:5px; text-align:center; color:#6c757d; line-height:1.3; }
     .step-item.active .step-label { color:#1A6FD4; font-weight:600; }
     .step-item.done   .step-label { color:#1DB87E; }
+    .step-item.skipped .step-label { color:#adb5bd; font-style:italic; }
 
     /* ── Card ── */
     .wizard-card { border:none; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,.1); }
@@ -157,12 +159,18 @@
     </button>
   </div>
 
+  <div class="alert alert-warning py-2 mb-3" style="font-size:12.5px; border-left:4px solid #F59E0B;">
+    <i class="fas fa-vial mr-1"></i> <strong>TEST MODE</strong> — this page calls the live Spark backend
+    (<code>onboarding_handler.ashx</code>) against the PayArc <strong>sandbox</strong>. Submit runs with
+    <code>skipSignature</code>, so no DocuSign email is sent.
+  </div>
+
   <!-- Step indicators -->
   <div class="step-track" id="step-track">
     <div class="step-item active" id="si-1"><div class="step-circle">1</div><div class="step-label">Business<br>Info</div></div>
     <div class="step-item"        id="si-2"><div class="step-circle">2</div><div class="step-label">Contact &amp;<br>Address</div></div>
     <div class="step-item"        id="si-3"><div class="step-circle">3</div><div class="step-label">Processing<br>Metrics</div></div>
-    <div class="step-item"        id="si-4"><div class="step-circle">4</div><div class="step-label">Questionnaire</div></div>
+    <div class="step-item"        id="si-4"><div class="step-circle">4</div><div class="step-label">Questionnaire<br><span style="font-size:9px;color:#adb5bd;">(if MOTO≥30%)</span></div></div>
     <div class="step-item"        id="si-5"><div class="step-circle">5</div><div class="step-label">Pricing<br>Model</div></div>
     <div class="step-item"        id="si-6"><div class="step-circle">6</div><div class="step-label">Banking<br>Details</div></div>
     <div class="step-item"        id="si-7"><div class="step-circle">7</div><div class="step-label">Owner /<br>Principal</div></div>
@@ -180,46 +188,84 @@
       <div class="row">
         <div class="col-md-6 form-group">
           <label>Business Name (DBA) <span class="required-star">*</span></label>
-          <div class="field-name">MerchantName</div>
-          <input type="text" class="form-control" id="f-merchantName" placeholder="e.g. Chicago Fitness Club">
+          <div class="field-name">MerchantName (max 25 chars)</div>
+          <input type="text" class="form-control" id="f-merchantName" placeholder="e.g. Chicago Fitness Club" maxlength="25">
           <small class="form-text text-muted">Name that appears on customer card statements</small>
         </div>
         <div class="col-md-6 form-group">
           <label>Legal Registered Name <span class="required-star">*</span></label>
-          <div class="field-name">LegalName</div>
-          <input type="text" class="form-control" id="f-legalName" placeholder="e.g. Chicago Fitness Club LLC">
+          <div class="field-name">LegalName (max 32 chars)</div>
+          <input type="text" class="form-control" id="f-legalName" placeholder="e.g. Chicago Fitness Club LLC" maxlength="32">
         </div>
         <div class="col-md-4 form-group">
           <label>Tax ID / EIN <span class="required-star">*</span></label>
           <div class="field-name">TaxId</div>
           <input type="text" class="form-control" id="f-taxId" placeholder="XX-XXXXXXX">
+          <small class="form-text text-muted">Stored encrypted — never logged</small>
         </div>
         <div class="col-md-4 form-group">
           <label>Ownership Type <span class="required-star">*</span></label>
           <div class="field-name">OwnershipType</div>
           <select class="form-control" id="f-ownershipType">
             <option value="">— Select —</option>
-            <option value="LLC">LLC</option>
-            <option value="Corp">Corp</option>
-            <option value="Sole_Proprietor">Sole Proprietor</option>
-            <option value="Partnership">Partnership</option>
+            <option value="government">Government</option>
+            <option value="llc">LLC</option>
+            <option value="non_profit">Non Profit</option>
+            <option value="partnership">Partnership</option>
+            <option value="private_corp">Private Corp</option>
+            <option value="public_corporation">Public Corp</option>
+            <option value="sole_prop">Sole Prop</option>
           </select>
         </div>
         <div class="col-md-4 form-group">
-          <label>Industry MCC Code <span class="required-star">*</span></label>
-          <div class="field-name">SicMccCode</div>
+          <label>Industry <span class="required-star">*</span></label>
+          <div class="field-name">Industry</div>
+          <select class="form-control" id="f-industry">
+            <option value="">— Select —</option>
+            <option value="general-retail-rest-low-risk">General Retail / Restaurant (Low Risk)</option>
+            <option value="discount-membership">Discount Membership</option>
+            <option value="medical-plan-discount">Medical Plan Discount</option>
+            <option value="telemedicine-services">Telemedicine Services</option>
+            <option value="medical-dental-device-sales">Medical / Dental Device Sales</option>
+            <option value="consumer-lending">Consumer Lending</option>
+            <option value="digital-goods-marketplace-nontravel">Digital Goods / Marketplace (Non-Travel)</option>
+            <option value="online-gaming">Online Gaming</option>
+            <option value="online-dating">Online Dating</option>
+            <option value="charitable-crowd-funding">Charitable / Crowd Funding</option>
+            <option value="document_prep_services">Document Prep Services</option>
+            <option value="business_ops_consutling">Business Operations Consulting</option>
+            <option value="seo">SEO Services</option>
+            <option value="nutra">Nutraceuticals</option>
+            <option value="other_high_risk">Other (High Risk)</option>
+          </select>
+          <small class="form-text text-muted">Confirmed from PayArc industry-codes-traditional doc</small>
+        </div>
+        <div class="col-md-4 form-group">
+          <label>Industry MCC Code</label>
+          <div class="field-name">SicMccCode (optional)</div>
           <input type="text" class="form-control" id="f-sicMccCode" placeholder="e.g. 7941">
           <small class="form-text text-muted">7941 = Sports Clubs · 7299 = Fitness Centers</small>
         </div>
-        <div class="col-md-6 form-group">
-          <label>Industry <span class="required-star">*</span></label>
-          <div class="field-name">Industry</div>
-          <input type="text" class="form-control" id="f-industry" placeholder="e.g. Fitness &amp; Recreation">
+        <div class="col-md-4 form-group">
+          <label>Date Incorporated <span class="required-star">*</span></label>
+          <div class="field-name">DateIncorporated (YYYY-MM-DD)</div>
+          <input type="date" class="form-control" id="f-dateIncorp">
+        </div>
+        <div class="col-md-4 form-group">
+          <label>State of Incorporation <span class="required-star">*</span></label>
+          <div class="field-name">StateOfIncorporation</div>
+          <input type="text" class="form-control" id="f-stateIncorp" maxlength="2" placeholder="IL">
         </div>
         <div class="col-md-6 form-group">
           <label>Website</label>
-          <div class="field-name">Website</div>
-          <input type="text" class="form-control" id="f-website" placeholder="https://mygym.com">
+          <div class="field-name">Website (optional, max 60 chars)</div>
+          <input type="text" class="form-control" id="f-website" placeholder="https://mygym.com" maxlength="60">
+        </div>
+        <div class="col-12 form-group">
+          <label>Business Summary <span class="required-star">*</span></label>
+          <div class="field-name">BusinessSummary (max 500 chars)</div>
+          <textarea class="form-control" id="f-businessSummary" rows="3" maxlength="500"
+            placeholder="Describe the school's services, customer types, and how payments are collected..."></textarea>
         </div>
       </div>
     </div>
@@ -254,17 +300,23 @@
           <input type="email" class="form-control" id="f-contactEmail">
         </div>
         <div class="col-md-3 form-group">
-          <label>Phone <span class="required-star">*</span></label>
+          <label>Contact Phone <span class="required-star">*</span></label>
           <div class="field-name">ContactPhoneNo</div>
           <input type="text" class="form-control" id="f-contactPhone" placeholder="9–14 digits">
         </div>
+        <div class="col-md-4 form-group">
+          <label>Customer Support # <span class="required-star">*</span></label>
+          <div class="field-name">CustomerSupportNumber</div>
+          <input type="text" class="form-control" id="f-supportPhone" placeholder="10–15 digits">
+          <small class="form-text text-muted">Printed on card statements for cardholders to call</small>
+        </div>
       </div>
       <hr>
-      <p class="font-weight-bold text-uppercase" style="font-size:11px; color:#718096; letter-spacing:.5px;">Office Address</p>
+      <p class="font-weight-bold text-uppercase" style="font-size:11px; color:#718096; letter-spacing:.5px;">Office Address (Physical)</p>
       <div class="row">
         <div class="col-md-7 form-group">
           <label>Street <span class="required-star">*</span></label>
-          <div class="field-name">OfficeAddress1</div>
+          <div class="field-name">OfficeAddress</div>
           <input type="text" class="form-control" id="f-officeAddr">
         </div>
         <div class="col-md-5 form-group">
@@ -279,35 +331,35 @@
         </div>
         <div class="col-md-3 form-group">
           <label>ZIP <span class="required-star">*</span></label>
-          <div class="field-name">OfficeZip</div>
+          <div class="field-name">OfficeZipCode</div>
           <input type="text" class="form-control" id="f-officeZip">
         </div>
       </div>
       <div class="custom-control custom-checkbox mb-3">
         <input type="checkbox" class="custom-control-input" id="chkSameAddr" onchange="toggleLegalAddr(this)">
-        <label class="custom-control-label" for="chkSameAddr" style="font-size:13px; font-weight:400;">Legal address same as office address</label>
+        <label class="custom-control-label" for="chkSameAddr" style="font-size:13px; font-weight:400;">Registered address same as office address</label>
       </div>
       <div id="legal-addr-fields">
         <p class="font-weight-bold text-uppercase" style="font-size:11px; color:#718096; letter-spacing:.5px;">Registered Legal Address</p>
         <div class="row">
           <div class="col-md-7 form-group">
             <label>Street <span class="required-star">*</span></label>
-            <div class="field-name">LegalAddress1</div>
+            <div class="field-name">RegisteredAddress</div>
             <input type="text" class="form-control" id="f-legalAddr">
           </div>
           <div class="col-md-5 form-group">
             <label>City <span class="required-star">*</span></label>
-            <div class="field-name">LegalCity</div>
+            <div class="field-name">RegisteredCity</div>
             <input type="text" class="form-control" id="f-legalCity">
           </div>
           <div class="col-md-2 form-group">
             <label>State <span class="required-star">*</span></label>
-            <div class="field-name">LegalState</div>
+            <div class="field-name">RegisteredState</div>
             <input type="text" class="form-control" id="f-legalState" maxlength="2">
           </div>
           <div class="col-md-3 form-group">
             <label>ZIP <span class="required-star">*</span></label>
-            <div class="field-name">LegalZip</div>
+            <div class="field-name">RegisteredZipCode</div>
             <input type="text" class="form-control" id="f-legalZip">
           </div>
         </div>
@@ -329,6 +381,18 @@
       <div class="info-box mb-4">
         <i class="fas fa-info-circle mr-1" style="color:#1A6FD4;"></i>
         Enter the school's realistic expected monthly card transaction volume. PayArc underwriting reviews these figures.
+        <strong>If MOTO % ≥ 30, Step 4 (Questionnaire) will be required.</strong>
+      </div>
+      <div class="row">
+        <div class="col-md-4 form-group">
+          <label>Currently Accept Credit Cards? <span class="required-star">*</span></label>
+          <div class="field-name">CurrentyAcceptCreditCards</div>
+          <select class="form-control" id="f-acceptsCards">
+            <option value="">— Select —</option>
+            <option value="Yes">Yes — currently processing</option>
+            <option value="No">No — new school, first time</option>
+          </select>
+        </div>
       </div>
       <div class="row">
         <div class="col-md-4 form-group">
@@ -361,6 +425,7 @@
       <small class="text-muted d-block mb-3">
         <strong>CardPresentPct + MotoPct must equal exactly 100.</strong>
         Adjust one field — the other updates automatically. PayArc API returns HTTP 422 if they don't sum to 100.
+        <br><strong>If MotoPct ≥ 30</strong>, the Questionnaire step is required and will be shown next.
       </small>
       <div class="pct-row mb-2">
         <div class="form-group">
@@ -380,10 +445,14 @@
         <i class="fas fa-exclamation-triangle mr-1"></i>
         Sum = <strong id="moto-sum-val">0</strong> — must equal exactly 100.
       </div>
+      <div class="alert alert-info py-2" id="questionnaire-hint" style="font-size:12px; display:none;">
+        <i class="fas fa-info-circle mr-1"></i>
+        MotoPct ≥ 30 — <strong>Questionnaire step will be shown</strong> before Pricing.
+      </div>
     </div>
     <div class="wizard-nav">
       <button class="btn btn-secondary" onclick="prevStep()"><i class="fas fa-arrow-left mr-1"></i>Back</button>
-      <button class="btn btn-primary" onclick="nextStep()">Next — Questionnaire <i class="fas fa-arrow-right ml-1"></i></button>
+      <button class="btn btn-primary" onclick="nextStep()" id="btn-next-3">Next <i class="fas fa-arrow-right ml-1"></i></button>
     </div>
   </div>
 
@@ -391,23 +460,23 @@
   <div class="card wizard-card" id="step-4" style="display:none;">
     <div class="card-header">
       <div class="step-title">Questionnaire</div>
-      <div class="step-subtitle">Step 4 of 9 — Required because MOTO/online transactions exceed 30%. All Spark schools need this.</div>
+      <div class="step-subtitle">Step 4 of 9 — Required only when MotoPct ≥ 30. Automatically skipped for in-person-only schools.</div>
     </div>
     <div class="card-body">
       <div class="row">
         <div class="col-md-4 form-group">
           <label>% Sales — North America</label>
-          <div class="field-name">GeoSalesNorthAmerica</div>
+          <div class="field-name">ProdSoldNorthAmericaPct</div>
           <input type="number" class="form-control" id="f-geoNA" placeholder="95" oninput="syncGeo()">
         </div>
         <div class="col-md-4 form-group">
           <label>% Sales — Europe</label>
-          <div class="field-name">GeoSalesEurope</div>
+          <div class="field-name">ProdSoldEuropePct</div>
           <input type="number" class="form-control" id="f-geoEU" placeholder="0" oninput="syncGeo()">
         </div>
         <div class="col-md-4 form-group">
-          <label>% Sales — Other</label>
-          <div class="field-name">GeoSalesOther</div>
+          <label>% Sales — Other Markets</label>
+          <div class="field-name">ProdSoldOtherMarketsPct</div>
           <input type="number" class="form-control" id="f-geoOther" placeholder="5" oninput="syncGeo()">
         </div>
         <div class="col-12" id="geo-alert" style="display:none;">
@@ -415,46 +484,49 @@
         </div>
         <div class="col-md-6 form-group">
           <label>% B2B (Business customers)</label>
-          <div class="field-name">B2BPct</div>
+          <div class="field-name">SellBusinessPct</div>
           <input type="number" class="form-control" id="f-b2b" placeholder="0" oninput="syncB2C(this)">
         </div>
         <div class="col-md-6 form-group">
           <label>% B2C (Individual customers)</label>
-          <div class="field-name">B2CPct</div>
+          <div class="field-name">SellConsumerPct</div>
           <input type="number" class="form-control" id="f-b2c" placeholder="100" oninput="syncB2B(this)">
         </div>
         <div class="col-md-6 form-group">
           <label>Membership / Recurring billing?</label>
-          <div class="field-name">Recurring</div>
+          <div class="field-name">MembershipPayments</div>
           <select class="form-control" id="f-recurring">
-            <option value="yes">Yes — Spark is a membership/recurring platform</option>
-            <option value="no">No</option>
+            <option value="Yes">Yes — Spark is a membership/recurring platform</option>
+            <option value="No">No</option>
           </select>
         </div>
         <div class="col-md-6 form-group">
           <label>Recurring % of transactions</label>
-          <div class="field-name">RecurringPct</div>
+          <div class="field-name">MembershipPaymentsPct</div>
           <input type="number" class="form-control" id="f-recurringPct" placeholder="85">
         </div>
         <div class="col-md-6 form-group">
           <label>Refund / Return policy?</label>
           <div class="field-name">ReturnPolicy</div>
           <select class="form-control" id="f-returnPolicy">
-            <option value="no">No refund policy</option>
-            <option value="yes">Yes — refunds available</option>
+            <!-- ReturnPolicy values verified against LIVE API: greater_than_30_days | less_than_30_days | no_returns | others -->
+            <option value="no_returns">No refunds</option>
+            <option value="less_than_30_days">Refund within 30 days</option>
+            <option value="greater_than_30_days">Refund after 30+ days</option>
+            <option value="others">Other</option>
           </select>
         </div>
         <div class="col-md-6 form-group">
           <label>Advance deposit % collected</label>
-          <div class="field-name">AdvanceDepositPct</div>
+          <div class="field-name">DepositPct</div>
           <input type="number" class="form-control" id="f-advDeposit" placeholder="0">
         </div>
       </div>
       <div class="locked-box mt-2">
         <i class="fas fa-lock mr-1 text-muted"></i>
         <strong>Pre-set (not editable):</strong>
-        WebsiteAcceptsPayments = <strong>yes</strong> · ChargeTiming = <strong>Order</strong> ·
-        RecurringPaymentProvider = <strong>Payarc</strong> · CVVCaptured = <strong>yes</strong>
+        WebsitePayments = <strong>Yes</strong> · WhenIsCustomerCharged = <strong>Order</strong> ·
+        WhoManagesRecurringPayments = <strong>Payarc</strong> · CaptureCVV = <strong>Yes</strong>
       </div>
     </div>
     <div class="wizard-nav">
@@ -470,42 +542,18 @@
       <div class="step-subtitle">Step 5 of 9 — Rate structure from the Spark Membership–PayArc contract</div>
     </div>
     <div class="card-body">
-      <div class="warn-box mb-4">
-        <i class="fas fa-exclamation-triangle mr-1" style="color:#F59E0B;"></i>
-        <strong>Pending confirmation:</strong> Actual rate values come from the Spark Membership–PayArc contract.
-        Demo uses placeholder rates. <em>(Open Question Q2)</em>
+      <div class="info-box mb-3" style="font-size:12.5px;">
+        <i class="fas fa-info-circle mr-1"></i>
+        <strong>No action needed on this step.</strong> Pricing is applied automatically by the Spark backend
+        using a pre-configured PayArc <strong>pricing template</strong> (<code>apply_pricing_template_id</code>,
+        from the <code>PayArcApplyPricingTemplateId</code> setting). School admins never see or set rate values —
+        so there is no pricing selection here.
       </div>
-      <div class="row">
-        <div class="col-md-4 mb-3">
-          <div class="pricing-option" id="pricing-blended" onclick="selectPricing('BlendedRatePricing')">
-            <div class="d-flex justify-content-between align-items-center">
-              <div class="font-weight-bold">Blended / Flat Rate</div>
-              <span class="badge-rec">Recommended</span>
-            </div>
-            <div class="field-name mt-1">BlendedRatePricing</div>
-            <div class="text-muted mt-2" style="font-size:12px;">One rate for all card types. Simpler.</div>
-            <div class="mt-2" style="font-size:12px; background:#EAF2FF; padding:8px; border-radius:4px;">
-              <strong>Rate:</strong> 2.9% + $0.30 <span class="text-muted">(demo placeholder)</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4 mb-3">
-          <div class="pricing-option" id="pricing-tiered" onclick="selectPricing('TieredPricing')">
-            <div class="font-weight-bold">Tiered</div>
-            <div class="field-name mt-1">TieredPricing</div>
-            <div class="text-muted mt-2" style="font-size:12px;">Qualified / Mid-qual / Non-qual tiers by card type.</div>
-          </div>
-        </div>
-        <div class="col-md-4 mb-3">
-          <div class="pricing-option" id="pricing-interchange" onclick="selectPricing('InterchangePlusPricing')">
-            <div class="font-weight-bold">Interchange Plus</div>
-            <div class="field-name mt-1">InterchangePlusPricing</div>
-            <div class="text-muted mt-2" style="font-size:12px;">Interchange cost + fixed markup. Most transparent.</div>
-          </div>
-        </div>
+      <div class="locked-box">
+        <i class="fas fa-lock mr-1 text-muted"></i>
+        The real add-lead payload attaches the configured pricing template; no pricing fields are collected from this form.
       </div>
-      <input type="hidden" id="f-pricingModel" value="">
-      <div class="text-danger" id="pricing-error" style="font-size:12px; display:none;">Please select a pricing model.</div>
+      <input type="hidden" id="f-pricingModel" value="BlendedRatePricing">
     </div>
     <div class="wizard-nav">
       <button class="btn btn-secondary" onclick="prevStep()"><i class="fas fa-arrow-left mr-1"></i>Back</button>
@@ -521,21 +569,21 @@
     </div>
     <div class="card-body">
       <div class="row">
-        <div class="col-md-5 form-group">
+        <div class="col-md-6 form-group">
           <label>Bank Account Number <span class="required-star">*</span></label>
           <div class="field-name">BankAccountNo</div>
           <input type="text" class="form-control" id="f-bankAccNo">
         </div>
-        <div class="col-md-4 form-group">
+        <div class="col-md-6 form-group">
           <label>Routing Number (ABA) <span class="required-star">*</span></label>
           <div class="field-name">BankRoutingNo</div>
           <input type="text" class="form-control" id="f-bankRouting" placeholder="9 digits">
         </div>
-        <div class="col-md-3 form-group">
-          <label>Bank Name <span class="required-star">*</span></label>
-          <div class="field-name">BankName</div>
-          <input type="text" class="form-control" id="f-bankName">
-        </div>
+      </div>
+      <div class="locked-box mt-2">
+        <i class="fas fa-info-circle mr-1 text-muted"></i>
+        <strong>BankName is not a confirmed PayArc Lead field</strong> — only <code>BankAccountNo</code> and
+        <code>BankRoutingNo</code> are in the API schema. A voided check in Step 8 provides bank verification.
       </div>
     </div>
     <div class="wizard-nav">
@@ -575,13 +623,16 @@
           <label>Title <span class="required-star">*</span></label>
           <div class="field-name">Owner.Title</div>
           <select class="form-control" id="f-ownerTitle">
+            <!-- Owners[].Title enum has NO CFO (spec). CFO is valid only for BeneficialOwners. -->
             <option value="">— Select —</option>
             <option value="CEO">CEO</option>
-            <option value="CFO">CFO</option>
-            <option value="Owner">Owner</option>
-            <option value="President">President</option>
             <option value="Director">Director</option>
+            <option value="Owner">Owner</option>
             <option value="Partner">Partner</option>
+            <option value="President">President</option>
+            <option value="Secretary">Secretary</option>
+            <option value="Treasurer">Treasurer</option>
+            <option value="Vice President">Vice President</option>
           </select>
         </div>
         <div class="col-md-3 form-group">
@@ -628,7 +679,17 @@
           <label>SSN <span class="required-star">*</span></label>
           <div class="field-name">Owner.SSN</div>
           <input type="password" class="form-control" id="f-ownerSsn" placeholder="9 digits, no dashes" maxlength="9">
-          <small class="form-text text-muted">Required for KYC identity verification</small>
+          <small class="form-text text-muted">Required for KYC — encrypted on server, never logged</small>
+        </div>
+        <div class="col-md-5 form-group">
+          <label>Driver License Number <span class="required-star">*</span></label>
+          <div class="field-name">Owner.DriverLicenseNo</div>
+          <input type="text" class="form-control" id="f-ownerDlNo" placeholder="e.g. IL123456789">
+        </div>
+        <div class="col-md-3 form-group">
+          <label>DL Issuing State <span class="required-star">*</span></label>
+          <div class="field-name">Owner.DriverLicenseState</div>
+          <input type="text" class="form-control" id="f-ownerDlState" maxlength="2" placeholder="IL">
         </div>
       </div>
     </div>
@@ -645,21 +706,26 @@
       <div class="step-subtitle">Step 8 of 9 — Uploaded as base64-encoded PNG or PDF via POST /v1/agent-hub/apply/add-documents</div>
     </div>
     <div class="card-body">
+      <div class="info-box mb-3">
+        <i class="fas fa-check-circle mr-1" style="color:#1DB87E;"></i>
+        <strong>DocumentType confirmed from official PayArc docs</strong> — 52 enum values verified.
+        The three fields per document object are: <code>DocumentType</code> · <code>DocumentName</code> · <code>DocumentDataBase64</code>
+      </div>
       <div class="row">
         <div class="col-md-6">
           <label class="font-weight-bold">Voided Check <span class="required-star">*</span></label>
-          <div class="field-name mb-2">DocumentType: voided_check</div>
+          <div class="field-name mb-2">DocumentType: "Voided Check/Bank Letter"</div>
           <div class="doc-upload" id="doc-check-area" onclick="document.getElementById('doc-check-input').click()">
             <input type="file" id="doc-check-input" accept=".pdf,.png,.jpg" onchange="onDocUpload(this,'doc-check-area','doc-check-name')">
             <i class="fas fa-university upload-icon" style="font-size:30px; color:#718096; margin-bottom:8px; display:block;"></i>
             <div class="font-weight-bold">Click to upload voided check</div>
-            <div class="text-muted mt-1" style="font-size:12px;">PDF or PNG · Will be base64-encoded and sent in API payload</div>
+            <div class="text-muted mt-1" style="font-size:12px;">PDF or PNG · Base64-encoded as DocumentDataBase64</div>
             <div id="doc-check-name" class="text-success mt-2" style="font-size:12px; display:none;"></div>
           </div>
         </div>
         <div class="col-md-6">
-          <label class="font-weight-bold">Owner Government ID <span class="required-star">*</span></label>
-          <div class="field-name mb-2">DocumentType: owner_id</div>
+          <label class="font-weight-bold">Owner Driver's License / Government ID <span class="required-star">*</span></label>
+          <div class="field-name mb-2">DocumentType: "Driving License or Government ID"</div>
           <div class="doc-upload" id="doc-id-area" onclick="document.getElementById('doc-id-input').click()">
             <input type="file" id="doc-id-input" accept=".pdf,.png,.jpg" onchange="onDocUpload(this,'doc-id-area','doc-id-name')">
             <i class="fas fa-id-card upload-icon" style="font-size:30px; color:#718096; margin-bottom:8px; display:block;"></i>
@@ -671,9 +737,8 @@
       </div>
       <div class="locked-box mt-4">
         <i class="fas fa-code mr-1 text-muted"></i>
-        In production, Spark backend reads the file, converts it to base64, and POSTs it to
-        <code>POST /v1/agent-hub/apply/add-documents</code> with the Agent Bearer Token.
-        Files never go through the browser to PayArc directly.
+        Backend sends: <code>{ "MerchantCode": "...", "MerchantDocuments": [ { "DocumentType": "Voided Check/Bank Letter", "DocumentName": "voided_check.pdf", "DocumentDataBase64": "..." } ] }</code>
+        <br>Files never go through the browser to PayArc directly.
       </div>
     </div>
     <div class="wizard-nav">
@@ -698,6 +763,7 @@
         <i class="fas fa-shield-alt mr-1" style="color:#F59E0B;"></i>
         This call is made by the Spark <strong>VB.NET backend</strong> — never from the browser.
         The <code>AGENT_BEARER_TOKEN</code> (Spark Membership's partner key) stays on the server.
+        Pricing object fields are injected from <code>t_Settings</code> — not collected from the form.
       </div>
       <div class="api-bar">
         <span class="api-badge">POST</span>
@@ -708,6 +774,13 @@
         <span style="color:#68D391;">Content-Type:</span> <span style="color:#FBD38D;">application/json</span>
       </div>
       <pre class="api-preview" id="review-json"></pre>
+      <div class="custom-control custom-checkbox mt-3">
+        <input type="checkbox" class="custom-control-input" id="chkSendSignature">
+        <label class="custom-control-label" for="chkSendSignature" style="font-size:13px; font-weight:600;">
+          Send for signature now (real submit — emails the owner the DocuSign to sign).
+          <span style="font-weight:400; color:#718096;">Leave unchecked for a safe test (creates the lead, no email).</span>
+        </label>
+      </div>
     </div>
     <div class="wizard-nav">
       <button class="btn btn-secondary" onclick="prevStep()"><i class="fas fa-arrow-left mr-1"></i>Back</button>
@@ -733,14 +806,14 @@
       <div class="merchant-code-box mb-4">
         <div style="font-size:10px; font-weight:700; color:#718096; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px;">MerchantCode</div>
         <div class="merchant-code-val" id="result-merchant-code">MC-2026-DEMO01</div>
-        <div style="font-size:11px; color:#718096; margin-top:6px; font-family:monospace;">t_Settings.payarcMerchantCode</div>
+        <div style="font-size:11px; color:#718096; margin-top:6px; font-family:monospace;">t_Locations.payArcMerchantCode</div>
       </div>
 
       <div class="row justify-content-center">
         <div class="col-md-8 text-left">
           <h6 class="font-weight-bold text-uppercase mb-3" style="font-size:11px; color:#718096; letter-spacing:.5px;">What Happens Next</h6>
           <ul class="next-steps list-unstyled">
-            <li><i class="fas fa-check-circle text-success mr-2"></i><strong>Lead created</strong> — MerchantCode stored in Spark settings</li>
+            <li><i class="fas fa-check-circle text-success mr-2"></i><strong>Lead created</strong> — MerchantCode stored in <code>t_Locations.payArcMerchantCode</code></li>
             <li><i class="fas fa-file-upload text-primary mr-2"></i><strong>Documents uploaded</strong> — Voided check &amp; owner ID sent to PayArc</li>
             <li>
               <i class="fas fa-envelope mr-2" style="color:#E53E3E;"></i>
@@ -748,7 +821,7 @@
               <br><small class="text-muted" style="margin-left:22px;">Owner must open the email and sign the merchant agreement digitally</small>
             </li>
             <li><i class="fas fa-clock text-muted mr-2"></i><strong>PayArc underwriting review</strong> — typically 3–10 business days</li>
-            <li><i class="fas fa-key mr-2" style="color:#1A6FD4;"></i><strong>On approval</strong> — Spark auto-fetches Merchant Bearer Token &amp; Client ID via <code>GET /v1/api/token/reveal/{id}</code></li>
+            <li><i class="fas fa-key mr-2" style="color:#1A6FD4;"></i><strong>On approval</strong> — Spark retrieves Merchant Bearer Token via webhook + stores <code>AccountMID</code></li>
           </ul>
 
           <hr class="my-3">
@@ -800,7 +873,7 @@
       <div class="overlay-step" id="ov-1"><span id="ov-1-ic" class="mr-2">○</span> POST /v1/agent-hub/apply/add-lead</div>
       <div class="overlay-step" id="ov-2"><span id="ov-2-ic" class="mr-2">○</span> POST /v1/agent-hub/apply/add-documents</div>
       <div class="overlay-step" id="ov-3"><span id="ov-3-ic" class="mr-2">○</span> POST /v1/agent-hub/apply/submit-for-signature</div>
-      <div class="overlay-step" id="ov-4"><span id="ov-4-ic" class="mr-2">○</span> Store MerchantCode in Spark t_Settings</div>
+      <div class="overlay-step" id="ov-4"><span id="ov-4-ic" class="mr-2">○</span> Store MerchantCode in t_Locations.payArcMerchantCode</div>
     </div>
   </div>
 </div>
@@ -813,58 +886,64 @@
 <script>
 
 const TOTAL_STEPS = 9;
-let currentStep   = 1;
+let currentStep = 1;
 
 // ── Demo data ───────────────────────────────────────────────────────────────
 const DEMO = {
-  'f-merchantName':  'Chicago Fitness Club',
-  'f-legalName':     'Chicago Fitness Club LLC',
-  'f-taxId':         '82-4916724',
-  'f-ownershipType': 'LLC',
-  'f-sicMccCode':    '7941',
-  'f-industry':      'Fitness & Recreation',
-  'f-website':       'https://chicagofitness.example.com',
-  'f-contactFirst':  'John',
-  'f-contactLast':   'Smith',
-  'f-contactPhone':  '3125559021',
-  'f-contactEmail':  'admin@chicagofitness.example.com',
-  'f-officeAddr':    '123 N Michigan Ave',
-  'f-officeCity':    'Chicago',
-  'f-officeState':   'IL',
-  'f-officeZip':     '60601',
-  'f-legalAddr':     '123 N Michigan Ave',
-  'f-legalCity':     'Chicago',
-  'f-legalState':    'IL',
-  'f-legalZip':      '60601',
-  'f-totalMonthly':  '45000',
-  'f-avgTicket':     '120',
-  'f-highTicket':    '480',
-  'f-cardPresent':   '20',
-  'f-moto':          '80',
-  'f-geoNA':         '95',
-  'f-geoEU':         '0',
-  'f-geoOther':      '5',
-  'f-b2b':           '0',
-  'f-b2c':           '100',
-  'f-recurring':     'yes',
-  'f-recurringPct':  '85',
-  'f-returnPolicy':  'no',
-  'f-advDeposit':    '0',
-  'f-bankAccNo':     '123456789',
-  'f-bankRouting':   '021000021',
-  'f-bankName':      'Bank of America',
-  'f-ownerFirst':    'John',
-  'f-ownerLast':     'Smith',
-  'f-ownerTitle':    'CEO',
-  'f-ownerPct':      '100',
-  'f-ownerEmail':    'john.smith@chicagofitness.example.com',
-  'f-ownerPhone':    '3125559021',
-  'f-ownerAddr':     '456 Lake Shore Dr',
-  'f-ownerCity':     'Chicago',
-  'f-ownerState':    'IL',
-  'f-ownerZip':      '60611',
-  'f-ownerDob':      '1985-03-15',
-  'f-ownerSsn':      '111223333',
+  'f-merchantName':     'Chicago Fitness Club',
+  'f-legalName':        'Chicago Fitness Club LLC',
+  'f-taxId':            '824916724',
+  'f-ownershipType':    'llc',
+  'f-industry':         'general-retail-rest-low-risk',
+  'f-sicMccCode':       '7941',
+  'f-dateIncorp':       '2015-06-01',
+  'f-stateIncorp':      'IL',
+  'f-website':          'https://chicagofitness.example.com',
+  'f-businessSummary':  'Chicago Fitness Club is a full-service gym offering monthly memberships, personal training, and group fitness classes to individual consumers.',
+  'f-contactFirst':     'John',
+  'f-contactLast':      'Smith',
+  'f-contactPhone':     '3125559021',
+  'f-supportPhone':     '3125559022',
+  'f-contactEmail':     'chirag@sparkmembership.com',
+  'f-officeAddr':       '123 N Michigan Ave',
+  'f-officeCity':       'Chicago',
+  'f-officeState':      'IL',
+  'f-officeZip':        '60601',
+  'f-legalAddr':        '123 N Michigan Ave',
+  'f-legalCity':        'Chicago',
+  'f-legalState':       'IL',
+  'f-legalZip':         '60601',
+  'f-acceptsCards':     'No',
+  'f-totalMonthly':     '45000',
+  'f-avgTicket':        '120',
+  'f-highTicket':       '480',
+  'f-cardPresent':      '20',
+  'f-moto':             '80',
+  'f-geoNA':            '95',
+  'f-geoEU':            '0',
+  'f-geoOther':         '5',
+  'f-b2b':              '0',
+  'f-b2c':              '100',
+  'f-recurring':        'Yes',
+  'f-recurringPct':     '85',
+  'f-returnPolicy':     'no_returns',
+  'f-advDeposit':       '0',
+  'f-bankAccNo':        '123456789',
+  'f-bankRouting':      '021000021',
+  'f-ownerFirst':       'John',
+  'f-ownerLast':        'Smith',
+  'f-ownerTitle':       'CEO',
+  'f-ownerPct':         '100',
+  'f-ownerEmail':       'chirag@sparkmembership.com',
+  'f-ownerPhone':       '3125559021',
+  'f-ownerAddr':        '456 Lake Shore Dr',
+  'f-ownerCity':        'Chicago',
+  'f-ownerState':       'IL',
+  'f-ownerZip':         '60611',
+  'f-ownerDob':         '1985-03-15',
+  'f-ownerSsn':         '111223333',
+  'f-ownerDlNo':        'IL123456789',
+  'f-ownerDlState':     'IL',
 };
 
 function loadDemoData() {
@@ -877,6 +956,7 @@ function loadDemoData() {
   document.getElementById('chkSameAddr').checked = false;
   document.getElementById('legal-addr-fields').style.display = '';
   selectPricing('BlendedRatePricing');
+  updateMotoPctHint();
   Swal.fire({ title:'Demo Data Loaded', text:'All fields pre-filled with Chicago Fitness Club example.', icon:'success', timer:1400, showConfirmButton:false });
 }
 
@@ -891,7 +971,7 @@ function goToStep(n) {
   currentStep = n;
   $('#step-' + currentStep).show();
   const si2 = document.getElementById('si-' + currentStep);
-  si2.classList.remove('done');
+  si2.classList.remove('done', 'skipped');
   si2.classList.add('active');
   si2.querySelector('.step-circle').innerHTML =
     currentStep === 9 ? '<i class="fas fa-paper-plane" style="font-size:11px;"></i>' : currentStep;
@@ -900,8 +980,22 @@ function goToStep(n) {
   if (currentStep === 9) buildReview();
 }
 
+function motoPct() {
+  return parseInt(document.getElementById('f-moto').value) || 0;
+}
+
 function nextStep() {
-  if (validateStep(currentStep)) goToStep(currentStep + 1);
+  if (!validateStep(currentStep)) return;
+  let target = currentStep + 1;
+  // Skip Questionnaire (step 4) if MotoPct < 30
+  if (target === 4 && motoPct() < 30) {
+    const si4 = document.getElementById('si-4');
+    si4.classList.remove('active', 'done');
+    si4.classList.add('skipped');
+    si4.querySelector('.step-circle').innerHTML = '—';
+    target = 5;
+  }
+  goToStep(target);
 }
 
 function prevStep() {
@@ -911,22 +1005,31 @@ function prevStep() {
   si.classList.remove('active', 'done');
   si.querySelector('.step-circle').innerHTML =
     currentStep === 9 ? '<i class="fas fa-paper-plane" style="font-size:11px;"></i>' : currentStep;
-  currentStep--;
+
+  let target = currentStep - 1;
+  // Skip Questionnaire (step 4) going backwards if MotoPct < 30
+  if (target === 4 && motoPct() < 30) {
+    target = 3;
+  }
+  currentStep = target;
   $('#step-' + currentStep).show();
   const si2 = document.getElementById('si-' + currentStep);
-  si2.classList.remove('done');
+  si2.classList.remove('done', 'skipped');
   si2.classList.add('active');
+  si2.querySelector('.step-circle').innerHTML =
+    currentStep === 9 ? '<i class="fas fa-paper-plane" style="font-size:11px;"></i>' : currentStep;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ── Validation ───────────────────────────────────────────────────────────────
 const REQUIRED = {
-  1: ['f-merchantName','f-legalName','f-taxId','f-ownershipType','f-sicMccCode','f-industry'],
-  2: ['f-contactFirst','f-contactLast','f-contactPhone','f-contactEmail','f-officeAddr','f-officeCity','f-officeState','f-officeZip'],
-  3: ['f-totalMonthly','f-avgTicket','f-highTicket','f-cardPresent','f-moto'],
-  4: [], 5: [],
-  6: ['f-bankAccNo','f-bankRouting','f-bankName'],
-  7: ['f-ownerFirst','f-ownerLast','f-ownerTitle','f-ownerPct','f-ownerEmail','f-ownerPhone','f-ownerAddr','f-ownerCity','f-ownerState','f-ownerZip','f-ownerDob','f-ownerSsn'],
+  1: ['f-merchantName','f-legalName','f-taxId','f-ownershipType','f-industry','f-dateIncorp','f-stateIncorp','f-businessSummary'],
+  2: ['f-contactFirst','f-contactLast','f-contactPhone','f-supportPhone','f-contactEmail','f-officeAddr','f-officeCity','f-officeState','f-officeZip'],
+  3: ['f-acceptsCards','f-totalMonthly','f-avgTicket','f-highTicket','f-cardPresent','f-moto'],
+  4: [],
+  5: [],
+  6: ['f-bankAccNo','f-bankRouting'],
+  7: ['f-ownerFirst','f-ownerLast','f-ownerTitle','f-ownerPct','f-ownerEmail','f-ownerPhone','f-ownerAddr','f-ownerCity','f-ownerState','f-ownerZip','f-ownerDob','f-ownerSsn','f-ownerDlNo','f-ownerDlState'],
   8: [], 9: [],
 };
 
@@ -975,17 +1078,24 @@ function syncMoto(el) {
   const v = Math.min(100, Math.max(0, parseInt(el.value) || 0));
   document.getElementById('f-moto').value = 100 - v;
   checkMotoSum();
+  updateMotoPctHint();
 }
 function syncCardPresent(el) {
   const v = Math.min(100, Math.max(0, parseInt(el.value) || 0));
   document.getElementById('f-cardPresent').value = 100 - v;
   checkMotoSum();
+  updateMotoPctHint();
 }
 function checkMotoSum() {
   const cp = parseInt(document.getElementById('f-cardPresent').value) || 0;
   const mo = parseInt(document.getElementById('f-moto').value) || 0;
   document.getElementById('moto-sum-val').textContent = cp + mo;
   document.getElementById('moto-sum-alert').style.display = (cp + mo !== 100) ? 'block' : 'none';
+}
+function updateMotoPctHint() {
+  const mo = parseInt(document.getElementById('f-moto').value) || 0;
+  const hint = document.getElementById('questionnaire-hint');
+  if (hint) hint.style.display = (mo >= 30) ? 'block' : 'none';
 }
 
 // ── Geo / B2B sync ───────────────────────────────────────────────────────────
@@ -1005,11 +1115,10 @@ function toggleLegalAddr(cb) {
 
 // ── Pricing ──────────────────────────────────────────────────────────────────
 function selectPricing(model) {
-  ['blended','tiered','interchange'].forEach(k => document.getElementById('pricing-' + k).classList.remove('selected'));
-  const map = { BlendedRatePricing:'blended', TieredPricing:'tiered', InterchangePlusPricing:'interchange' };
-  if (map[model]) document.getElementById('pricing-' + map[model]).classList.add('selected');
-  document.getElementById('f-pricingModel').value = model;
-  document.getElementById('pricing-error').style.display = 'none';
+  // Pricing selection removed from the UI (backend applies a configured template).
+  // Kept null-safe so any legacy callers (e.g. loadDemoData) don't error.
+  const el = document.getElementById('f-pricingModel');
+  if (el) el.value = model;
 }
 
 // ── Document upload ───────────────────────────────────────────────────────────
@@ -1025,101 +1134,137 @@ function onDocUpload(input, areaId, nameId) {
 // ── Helper ───────────────────────────────────────────────────────────────────
 function fv(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
 
-// ── Build payload ─────────────────────────────────────────────────────────────
+// ── Build payload — corrected structure ──────────────────────────────────────
+// Correct structure per PayArc Add Lead API:
+//   { "Lead": {...}, "Owners": [...], "AssignedAgentEmail": "...",
+//     "BlendedRatePricing": {...},  // OR TieredPricing / InterchangePlusPricing — at TOP LEVEL
+//     "Questionnaire": {...}        // at TOP LEVEL, only when MotoPct >= 30
+//   }
 function buildPayload() {
   const sameAddr = document.getElementById('chkSameAddr').checked;
+  const mo = motoPct();
   const pm = fv('f-pricingModel') || 'BlendedRatePricing';
-  return {
-    MerchantName:           fv('f-merchantName'),
-    LegalName:              fv('f-legalName'),
-    TaxId:                  fv('f-taxId'),
-    OwnershipType:          fv('f-ownershipType'),
-    SicMccCode:             fv('f-sicMccCode'),
-    Industry:               fv('f-industry'),
-    Website:                fv('f-website') || undefined,
-    ContactFirstName:       fv('f-contactFirst'),
-    ContactLastName:        fv('f-contactLast'),
-    ContactEmail:           fv('f-contactEmail'),
-    ContactPhoneNo:         fv('f-contactPhone'),
-    OfficeAddress1:         fv('f-officeAddr'),
-    OfficeCity:             fv('f-officeCity'),
-    OfficeState:            fv('f-officeState'),
-    OfficeZip:              fv('f-officeZip'),
-    LegalAddress1:          sameAddr ? fv('f-officeAddr')  : fv('f-legalAddr'),
-    LegalCity:              sameAddr ? fv('f-officeCity')  : fv('f-legalCity'),
-    LegalState:             sameAddr ? fv('f-officeState') : fv('f-legalState'),
-    LegalZip:               sameAddr ? fv('f-officeZip')   : fv('f-legalZip'),
-    TotalMonthlyProcessing: parseInt(fv('f-totalMonthly')) || 0,
-    AvgTicketValue:         parseInt(fv('f-avgTicket'))    || 0,
-    HighTicketValue:        parseInt(fv('f-highTicket'))   || 0,
-    CardPresentPct:         parseInt(fv('f-cardPresent'))  || 0,
-    MotoPct:                parseInt(fv('f-moto'))         || 0,
-    BankAccountNo:          fv('f-bankAccNo'),
-    BankRoutingNo:          fv('f-bankRouting'),
-    BankName:               fv('f-bankName'),
-    Questionnaire: {
-      WebsiteAcceptsPayments:   'yes',
-      GeoSalesNorthAmerica:     parseInt(fv('f-geoNA'))        || 0,
-      GeoSalesEurope:           parseInt(fv('f-geoEU'))        || 0,
-      GeoSalesOther:            parseInt(fv('f-geoOther'))     || 0,
-      B2BPct:                   parseInt(fv('f-b2b'))          || 0,
-      B2CPct:                   parseInt(fv('f-b2c'))          || 0,
-      ChargeTiming:             'Order',
-      ReturnPolicy:             fv('f-returnPolicy'),
-      AdvanceDepositPct:        parseInt(fv('f-advDeposit'))   || 0,
-      Recurring:                fv('f-recurring'),
-      RecurringPct:             parseInt(fv('f-recurringPct')) || 0,
-      RecurringPaymentProvider: 'Payarc',
-      CVVCaptured:              'yes',
-    },
-    Pricing: { [pm]: { Rate: '2.90', PerTransactionFee: '0.30' } },
-    Owners: [{
-      FirstName:    fv('f-ownerFirst'),
-      LastName:     fv('f-ownerLast'),
-      Title:        fv('f-ownerTitle'),
-      OwnershipPct: parseInt(fv('f-ownerPct')) || 100,
-      Address:      fv('f-ownerAddr'),
-      City:         fv('f-ownerCity'),
-      State:        fv('f-ownerState'),
-      ZipCode:      fv('f-ownerZip'),
-      PhoneNo:      fv('f-ownerPhone'),
-      Email:        fv('f-ownerEmail'),
-      BirthDate:    fv('f-ownerDob'),
-      SSN:          '***REDACTED***',
-    }],
+
+  const lead = {
+    MerchantName:              fv('f-merchantName'),
+    LegalName:                 fv('f-legalName'),
+    TaxId:                     fv('f-taxId'),
+    OwnershipType:             fv('f-ownershipType'),
+    Industry:                  fv('f-industry'),
+    SicMccCode:                fv('f-sicMccCode') || undefined,
+    Website:                   fv('f-website')    || undefined,
+    DateIncorporated:          fv('f-dateIncorp'),
+    StateOfIncorporation:      fv('f-stateIncorp'),
+    BusinessSummary:           fv('f-businessSummary'),
+    ContactFirstName:          fv('f-contactFirst'),
+    ContactLastName:           fv('f-contactLast'),
+    ContactEmail:              fv('f-contactEmail'),
+    ContactPhoneNo:            fv('f-contactPhone'),
+    CustomerSupportNumber:     fv('f-supportPhone'),
+    OfficeAddress:             fv('f-officeAddr'),
+    OfficeCity:                fv('f-officeCity'),
+    OfficeState:               fv('f-officeState'),
+    OfficeZipCode:             fv('f-officeZip'),
+    RegisteredAddress:         sameAddr ? fv('f-officeAddr')  : fv('f-legalAddr'),
+    RegisteredCity:            sameAddr ? fv('f-officeCity')  : fv('f-legalCity'),
+    RegisteredState:           sameAddr ? fv('f-officeState') : fv('f-legalState'),
+    RegisteredZipCode:         sameAddr ? fv('f-officeZip')   : fv('f-legalZip'),
+    CurrentyAcceptCreditCards: fv('f-acceptsCards'),
+    TotalMonthlyProcessing:    parseInt(fv('f-totalMonthly')) || 0,
+    AvgTicketValue:            parseInt(fv('f-avgTicket'))    || 0,
+    HighTicketValue:           parseInt(fv('f-highTicket'))   || 0,
+    CardPresentPct:            parseInt(fv('f-cardPresent'))  || 0,
+    MotoPct:                   mo,
+    BankAccountNo:             fv('f-bankAccNo'),
+    BankRoutingNo:             fv('f-bankRouting'),
+    // enum: tiered | interchange | bundleRate (may be omitted when a pricing template is used — pending PayArc confirmation, Blocker B3)
+    DiscountRateProgram:       pm === 'BlendedRatePricing' ? 'bundleRate' : (pm === 'TieredPricing' ? 'tiered' : 'interchange'),
+    ProcessingTerminated:      'No',
   };
+
+  const payload = {
+    Lead: lead,
+    Owners: [{
+      FirstName:          fv('f-ownerFirst'),
+      LastName:           fv('f-ownerLast'),
+      Title:              fv('f-ownerTitle'),
+      OwnershipPct:       parseInt(fv('f-ownerPct')) || 100,
+      Address:            fv('f-ownerAddr'),
+      City:               fv('f-ownerCity'),
+      State:              fv('f-ownerState'),
+      ZipCode:            fv('f-ownerZip'),
+      PhoneNo:            fv('f-ownerPhone'),
+      Email:              fv('f-ownerEmail'),
+      BirthDate:          fv('f-ownerDob'),
+      SSN:                '***REDACTED***',
+      DriverLicenseNo:    fv('f-ownerDlNo'),
+      DriverLicenseState: fv('f-ownerDlState'),
+    }],
+    AssignedAgentEmail: '[CONFIG: PayArcAssignedAgentEmail — not collected from form]',
+  };
+
+  // Pricing is applied server-side via a PayArc pricing template (PayArc support, Jun 2026):
+  // apply_pricing_template_id sits at the ROOT of the payload. The id comes from backend config
+  // (PayArcApplyPricingTemplateId). No rate values are collected from — or invented in — the form.
+  payload.apply_pricing_template_id = '[CONFIG: PayArcApplyPricingTemplateId]';
+
+  // Questionnaire at TOP LEVEL — only included when MotoPct >= 30
+  if (mo >= 30) {
+    payload.Questionnaire = {
+      WebsitePayments:             'Yes',
+      ProdSoldNorthAmericaPct:     parseInt(fv('f-geoNA'))        || 0,
+      ProdSoldEuropePct:           parseInt(fv('f-geoEU'))        || 0,
+      ProdSoldOtherMarketsPct:     parseInt(fv('f-geoOther'))     || 0,
+      SellBusinessPct:             parseInt(fv('f-b2b'))          || 0,
+      SellConsumerPct:             parseInt(fv('f-b2c'))          || 0,
+      // Formats verified against the LIVE API: WhenIsCustomerCharged lowercase; MembershipPayments a
+      // "yes"/"no" string; CaptureCVV a real boolean; WhoManagesRecurringPayments omitted (value unconfirmed).
+      WhenIsCustomerCharged:       'order',
+      ReturnPolicy:                fv('f-returnPolicy'),
+      DepositPct:                  parseInt(fv('f-advDeposit'))   || 0,
+      MembershipPayments:          fv('f-recurring') === 'Yes' ? 'yes' : 'no',
+      MembershipPaymentsPct:       parseInt(fv('f-recurringPct')) || 0,
+      CaptureCVV:                  true,
+    };
+  }
+
+  return payload;
 }
 
 // ── Review screen ─────────────────────────────────────────────────────────────
 function buildReview() {
   const sections = [
     { title:'Business', cols:[
-      ['MerchantName',  fv('f-merchantName')],
-      ['LegalName',     fv('f-legalName')],
-      ['TaxId',         fv('f-taxId')],
-      ['OwnershipType', fv('f-ownershipType')],
-      ['SicMccCode',    fv('f-sicMccCode')],
+      ['MerchantName',       fv('f-merchantName')],
+      ['LegalName',          fv('f-legalName')],
+      ['TaxID',              fv('f-taxId') ? '**-****' + fv('f-taxId').slice(-3) : '—'],
+      ['OwnershipType',      fv('f-ownershipType')],
+      ['Industry',           fv('f-industry')],
+      ['DateIncorporated',   fv('f-dateIncorp')],
+      ['StateofIncorp.',     fv('f-stateIncorp')],
     ]},
     { title:'Contact', cols:[
-      ['Contact',  fv('f-contactFirst')+' '+fv('f-contactLast')],
-      ['Email',    fv('f-contactEmail')],
-      ['Phone',    fv('f-contactPhone')],
-      ['Address',  fv('f-officeAddr')+', '+fv('f-officeCity')+', '+fv('f-officeState')],
+      ['Contact',           fv('f-contactFirst')+' '+fv('f-contactLast')],
+      ['Email',             fv('f-contactEmail')],
+      ['Phone',             fv('f-contactPhone')],
+      ['Support #',         fv('f-supportPhone')],
+      ['OfficeAddress',     fv('f-officeAddr')+', '+fv('f-officeCity')+', '+fv('f-officeState')],
     ]},
     { title:'Processing', cols:[
-      ['Monthly Volume', '$'+fv('f-totalMonthly')],
-      ['Avg Ticket',     '$'+fv('f-avgTicket')],
-      ['High Ticket',    '$'+fv('f-highTicket')],
-      ['Card Present',   fv('f-cardPresent')+'%'],
-      ['MOTO / Online',  fv('f-moto')+'%'],
-      ['Pricing',        fv('f-pricingModel')],
+      ['Monthly Volume',    '$'+fv('f-totalMonthly')],
+      ['Avg Ticket',        '$'+fv('f-avgTicket')],
+      ['High Ticket',       '$'+fv('f-highTicket')],
+      ['CardPresentPct',    fv('f-cardPresent')+'%'],
+      ['MotoPct',           fv('f-moto')+'%'],
+      ['Accepts Cards?',    fv('f-acceptsCards')],
+      ['DiscountRateProgram', fv('f-pricingModel')],
     ]},
     { title:'Owner / DocuSign', cols:[
-      ['Owner',      fv('f-ownerFirst')+' '+fv('f-ownerLast')],
-      ['Title',      fv('f-ownerTitle')],
-      ['Ownership',  fv('f-ownerPct')+'%'],
-      ['Email ✉',    fv('f-ownerEmail')],
-      ['Bank',       fv('f-bankName')],
+      ['Owner',             fv('f-ownerFirst')+' '+fv('f-ownerLast')],
+      ['Title',             fv('f-ownerTitle')],
+      ['Ownership',         fv('f-ownerPct')+'%'],
+      ['Email ✉',           fv('f-ownerEmail')],
+      ['DL State',          fv('f-ownerDlState')],
     ]},
   ];
   let html = '';
@@ -1157,7 +1302,7 @@ function submitApplication() {
   setTimeout(() => { setStep(1, true);  setStep(2, false); document.getElementById('overlay-msg').textContent = 'Lead created — MerchantCode received'; document.getElementById('overlay-sub').textContent = 'HTTP 200 OK'; }, 1600);
   setTimeout(() => { setStep(2, true);  setStep(3, false); document.getElementById('overlay-msg').textContent = 'Uploading documents...'; document.getElementById('overlay-sub').textContent = 'POST /v1/agent-hub/apply/add-documents'; }, 2600);
   setTimeout(() => { setStep(3, true);  setStep(4, false); document.getElementById('overlay-msg').textContent = 'Sending DocuSign email to owner...'; document.getElementById('overlay-sub').textContent = 'POST /v1/agent-hub/apply/submit-for-signature'; }, 3800);
-  setTimeout(() => { setStep(4, true);  document.getElementById('overlay-msg').textContent = 'All done!'; document.getElementById('overlay-sub').textContent = 'MerchantCode stored in t_Settings'; }, 5000);
+  setTimeout(() => { setStep(4, true);  document.getElementById('overlay-msg').textContent = 'All done!'; document.getElementById('overlay-sub').textContent = 'MerchantCode stored in t_Locations'; }, 5000);
   setTimeout(() => { overlay.classList.remove('show'); showSuccess(); }, 5800);
 }
 
@@ -1171,19 +1316,20 @@ function showSuccess() {
   document.getElementById('api-log-content').textContent = [
     '[ 1 ] POST https://testapi.payarc.net/v1/agent-hub/apply/add-lead',
     '      Authorization: Bearer {AGENT_BEARER_TOKEN}',
+    '      Body: { "Lead": { ... }, "Owners": [...], "BlendedRatePricing": {...}, "Questionnaire": {...} }',
     '      → HTTP 200',
-    '      ← { "MerchantCode": "' + code + '", "Status": "pending" }',
+    '      ← { "MerchantCode": "' + code + '", "Status": 0 }',
     '',
     '[ 2 ] POST https://testapi.payarc.net/v1/agent-hub/apply/add-documents',
+    '      Body: { "MerchantCode": "' + code + '", "MerchantDocuments": [...] }',
     '      → HTTP 200',
-    '      ← { "DocumentsReceived": 2 }',
     '',
     '[ 3 ] POST https://testapi.payarc.net/v1/agent-hub/apply/submit-for-signature',
-    '      Body: { "MerchantCode": "' + code + '", "generate_form": true, "return_url": "https://spark.app/payarc/callback" }',
-    '      → HTTP 200',
-    '      ← { "Status": "sent", "SigningLink": "https://docusign.net/sign/..." }',
+    '      Body: { "MerchantCode": "' + code + '", "validate": true, "generate_form": true, "return_url": "..." }',
+    '      → HTTP 201',
     '',
-    '[ 4 ] UPDATE t_Settings SET payarcMerchantCode = "' + code + '" WHERE locationID = {locationID}',
+    '[ 4 ] UPDATE t_Locations SET payArcMerchantCode = \'' + code + '\', payArcAppStatus = \'Submitted\'',
+    '      WHERE locationID = {locationID}',
   ].join('\n');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1209,10 +1355,10 @@ function checkStatus() {
         html:`<div style="text-align:left; font-size:13px;">
           <p><i class="fas fa-check-circle" style="color:#1DB87E;"></i> PayArc has approved this merchant.</p>
           <div style="background:#f8f9fa; border-radius:6px; padding:12px; font-family:monospace; font-size:11px; border:1px solid #dee2e6; line-height:1.8;">
-            <div><b>GET</b> /v1/api/token/reveal/{merchant_id}</div>
-            <div style="color:#1DB87E;">← Merchant Bearer Token received</div>
-            <div style="color:#1A6FD4;">← Client ID received</div>
-            <div style="margin-top:8px; color:#718096;">UPDATE t_Settings SET payarcBearerToken = '...', payarcClientID = '...'</div>
+            <div><b>Webhook received:</b> "Merchant Onboarded"</div>
+            <div style="color:#1DB87E;">← AccountMID received from PayArc</div>
+            <div style="margin-top:8px; color:#718096;">UPDATE t_Locations SET payArcMID = '...', payArcAppStatus = 'Active'</div>
+            <div style="color:#718096;">UPDATE t_Settings SET paymentGateway = 'payarc'</div>
           </div>
           <p class="mt-3 mb-0 text-muted" style="font-size:12px;">Payment gateway is now LIVE for this school.</p>
         </div>`,
@@ -1226,7 +1372,7 @@ function checkStatus() {
         html:`<div style="font-size:13px; text-align:left;">
           <b>POST</b> /v1/agent-hub/apply/lead-status<br>
           <b>Body:</b> { "MerchantCode": "${code}" }<br><br>
-          <b>Response:</b> { "Status": "pending" }<br><br>
+          <b>Response:</b> { "Status": 32, "LeadStatus": "submitted_to_underwriting" }<br><br>
           <span class="text-muted" style="font-size:12px;">PayArc underwriting is reviewing. Check again later.</span>
           <br><small style="color:#aaa;">(Demo: check ${3-statusCheckCount} more time${3-statusCheckCount===1?'':'s'} to simulate approval)</small>
         </div>`,
@@ -1244,6 +1390,181 @@ function openDocuSignPreview(e) {
   const email  = fv('f-ownerEmail')    || 'owner@example.com';
   const school = fv('f-merchantName')  || 'Your School';
   window.open(`docusign-preview.html?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&school=${encodeURIComponent(school)}`, '_blank');
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     REAL BACKEND WIRING (overrides the mock submit/checkStatus above).
+     Calls onboarding_handler.ashx (same origin) with the session cookie.
+     Field names match the handler's DFC keys. Uses skipSignature=1 so no
+     DocuSign email fires during testing.
+═══════════════════════════════════════════════════════════════════════ -->
+<script>
+const ONBOARDING_API = 'onboarding_handler.ashx';
+
+async function apiPost(query, fields) {
+  const body = new URLSearchParams();
+  for (const k in fields) body.append(k, fields[k] == null ? '' : String(fields[k]));
+  const resp = await fetch(ONBOARDING_API + '?' + query, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    credentials: 'include',
+    body: body.toString()
+  });
+  const text = await resp.text();
+  let json;
+  try { json = JSON.parse(text); }
+  catch (e) { throw new Error('Unexpected (non-JSON) response — are you logged into Spark in this browser? First 160 chars: ' + text.slice(0, 160)); }
+  return json;
+}
+
+function sameAddr() { return document.getElementById('chkSameAddr').checked; }
+
+function step1Fields() {
+  const same = sameAddr();
+  return {
+    dbaName: fv('f-merchantName'), legalName: fv('f-legalName'), taxId: fv('f-taxId'),
+    officeAddress: fv('f-officeAddr'), officeCity: fv('f-officeCity'), officeState: fv('f-officeState'), officeZip: fv('f-officeZip'),
+    regAddress: same ? fv('f-officeAddr')  : fv('f-legalAddr'),
+    regCity:    same ? fv('f-officeCity')  : fv('f-legalCity'),
+    regState:   same ? fv('f-officeState') : fv('f-legalState'),
+    regZip:     same ? fv('f-officeZip')   : fv('f-legalZip'),
+    phone: fv('f-contactPhone'), email: fv('f-contactEmail'), website: fv('f-website'),
+    ownershipType: fv('f-ownershipType'), industry: fv('f-industry'),
+    dateIncorporated: fv('f-dateIncorp'), stateOfIncorporation: fv('f-stateIncorp'),
+    bizSummary: fv('f-businessSummary'), custSupportPhone: fv('f-supportPhone')
+  };
+}
+function step2Fields() {
+  return { monthlyVolume: fv('f-totalMonthly'), avgTicket: fv('f-avgTicket'), highTicket: fv('f-highTicket'),
+           cardPresentPct: fv('f-cardPresent'), motoPct: fv('f-moto') };
+}
+function ownerFields() {
+  return { ownerID: '0', firstName: fv('f-ownerFirst'), lastName: fv('f-ownerLast'), title: fv('f-ownerTitle'),
+           ownershipPct: fv('f-ownerPct'), address: fv('f-ownerAddr'), city: fv('f-ownerCity'), state: fv('f-ownerState'),
+           zipCode: fv('f-ownerZip'), country: 'US', phoneNo: fv('f-ownerPhone'), birthDate: fv('f-ownerDob'),
+           ssn: fv('f-ownerSsn'), driverLicenseNo: fv('f-ownerDlNo'), driverLicenseState: fv('f-ownerDlState'),
+           email: fv('f-ownerEmail'), isBeneficialOwner: '0' };
+}
+function bankingFields() {
+  return { bankRouting: fv('f-bankRouting'), bankAccount: fv('f-bankAccNo') };
+}
+// Questionnaire is only used by the backend when MotoPct >= 30. Values match the
+// live-verified contract (snake_case ReturnPolicy, "order", yes/no as 1/0 which
+// the handler converts). Fields the form doesn't collect use the pre-set defaults.
+function questionnaireFields() {
+  const recurring = fv('f-recurring') === 'Yes';
+  const rp = fv('f-returnPolicy');
+  const q = {
+    q_northAmericaPct: fv('f-geoNA') || '0', q_europePct: fv('f-geoEU') || '0', q_otherMarketsPct: fv('f-geoOther') || '0',
+    q_sellBusinessPct: fv('f-b2b') || '0', q_sellConsumerPct: fv('f-b2c') || '0',
+    q_websitePayments: 'Yes', q_sslProvider: 'Spark',
+    q_returnPolicy: rp, q_whenCharged: 'order',
+    q_isShipmentTraceable: 'false', q_isDeliveryReceipt: 'false', q_turnaroundDays: '0',
+    q_advancedDeposits: (parseInt(fv('f-advDeposit')) || 0) > 0 ? 'true' : 'false', q_depositPct: fv('f-advDeposit') || '0',
+    q_isSeasonal: 'false',
+    q_membershipPayments: recurring ? 'true' : 'false', q_membershipPaymentsPct: fv('f-recurringPct') || '0', q_packageUsageDays: '30',
+    q_captureCvv: 'true'
+  };
+  // Booleans MUST be "true"/"false" strings — Spark's toBoolean uses Boolean.TryParse, which rejects "1"/"0".
+  for (let i = 1; i <= 12; i++) q['q_seasonalMonth' + i] = 'false';
+  if (rp === 'no_returns') q.q_noRefundsInfo = 'No refunds on active memberships';
+  if (rp === 'others')     q.q_returnPolicyOther = 'See published policy';
+  return q;
+}
+function readFileAsDataURL(input) {
+  return new Promise(resolve => {
+    if (!input || !input.files || !input.files.length) return resolve(null);
+    const r = new FileReader();
+    r.onload = () => resolve({ data: r.result, name: input.files[0].name });
+    r.onerror = () => resolve(null);
+    r.readAsDataURL(input.files[0]);
+  });
+}
+async function docFields() {
+  const chk = await readFileAsDataURL(document.getElementById('doc-check-input'));
+  const id  = await readFileAsDataURL(document.getElementById('doc-id-input'));
+  const f = {};
+  if (chk && id) { f.voidedCheckB64 = chk.data; f.voidedCheckName = chk.name; f.ownerIdB64 = id.data; f.ownerIdName = id.name; }
+  return f;
+}
+
+async function submitApplication() {
+  const overlay = document.getElementById('submitting-overlay');
+  const setStep = (n, done) => {
+    document.getElementById('ov-' + n).classList.add(done ? 'done' : 'active');
+    document.getElementById('ov-' + n + '-ic').textContent = done ? '✓' : '▶';
+  };
+  const msg = (m, s) => { document.getElementById('overlay-msg').textContent = m; document.getElementById('overlay-sub').textContent = s || ''; };
+  overlay.classList.add('show');
+  try {
+    setStep(1, false); msg('Saving application draft…', 'saveDraft: business, processing, owner, banking');
+    let r = await apiPost('action=saveDraft&step=1', step1Fields()); if (!r.success) throw new Error(r.message || 'Business step failed');
+    r = await apiPost('action=saveDraft&step=2', step2Fields());     if (!r.success) throw new Error(r.message || 'Processing step failed');
+    r = await apiPost('action=saveDraft&step=4', ownerFields());     if (!r.success) throw new Error(r.message || 'Owner step failed');
+    r = await apiPost('action=saveDraft&step=5', bankingFields());   if (!r.success) throw new Error(r.message || 'Banking step failed');
+
+    setStep(1, true); setStep(2, false); msg('Submitting lead to PayArc…', 'POST /agent-hub/apply/add-lead');
+    const sendSig = !!(document.getElementById('chkSendSignature') && document.getElementById('chkSendSignature').checked);
+    const fields = Object.assign({ skipSignature: sendSig ? 'false' : 'true', returnUrl: location.origin + '/abundance/onboarding_complete.html' },
+                                 questionnaireFields(), await docFields());
+    r = await apiPost('action=submit', fields);
+    setStep(2, true); setStep(3, true); setStep(4, true);
+    if (!r.success) throw new Error(r.message || 'Submit failed');
+
+    overlay.classList.remove('show');
+    showSuccess(r);
+  } catch (e) {
+    overlay.classList.remove('show');
+    Swal.fire({ title: 'Submission failed', text: e.message, icon: 'error', confirmButtonColor: '#1A6FD4' });
+  }
+}
+
+function showSuccess(r) {
+  document.getElementById('wizard-container').style.display = 'none';
+  document.getElementById('success-screen').style.display = 'block';
+  document.getElementById('result-merchant-code').textContent = r.merchantCode || '(none returned)';
+  document.getElementById('result-owner-email').textContent   = fv('f-ownerEmail') || 'owner@example.com';
+  const docsSent = !!(document.getElementById('doc-check-input').files.length && document.getElementById('doc-id-input').files.length);
+  let sig;
+  if (r.skipped) {
+    sig = 'Signature <b>skipped</b> (test mode) — no DocuSign sent.';
+  } else if (r.signatureSubmitted && r.signingUrl) {
+    sig = 'Ready to sign — <a href="' + r.signingUrl + '" target="_blank" style="color:#1A6FD4;font-weight:700;">open the DocuSign to sign &raquo;</a> ' +
+          '<span style="color:#718096;">(sandbox usually doesn\'t email — use this link; it expires in a few minutes)</span>';
+  } else if (r.signatureSubmitted) {
+    sig = 'DocuSign signature request created for the owner.';
+  } else {
+    sig = 'Lead created; signature step did not complete.';
+  }
+  const ul = document.querySelector('.next-steps');
+  if (ul) ul.innerHTML =
+    '<li><i class="fas fa-check-circle text-success mr-2"></i><b>Lead created</b> — MerchantCode stored in <code>t_Locations.payArcMerchantCode</code></li>' +
+    '<li><i class="fas fa-file-upload ' + (docsSent ? 'text-primary' : 'text-muted') + ' mr-2"></i><b>Documents</b> — ' + (docsSent ? 'voided check &amp; owner ID uploaded to PayArc' : 'none uploaded (optional this run)') + '</li>' +
+    '<li><i class="fas fa-envelope mr-2" style="color:#E53E3E;"></i>' + sig + '</li>' +
+    '<li><i class="fas fa-clock text-muted mr-2"></i><b>Status</b> — use Check Status below (polls PayArc lead-status)</li>';
+  document.getElementById('api-log-content').textContent = 'Real backend response:\n' + JSON.stringify(r, null, 2);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function checkStatus() {
+  const btn = document.getElementById('btn-check-status');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Checking…';
+  try {
+    const r = await apiPost('action=checkStatus', {});
+    if (!r.success) throw new Error(r.message || 'Status check failed');
+    const pill = document.getElementById('status-pill');
+    if (r.isActive) { pill.className = 'status-pill status-approved'; pill.textContent = '● ' + (r.displayStatus || 'Active'); }
+    else            { pill.className = 'status-pill status-pending';  pill.textContent = '● ' + (r.displayStatus || r.leadStatus || 'Pending'); }
+    Swal.fire({ title: 'Status: ' + (r.displayStatus || r.leadStatus || 'Pending'),
+      html: '<div style="text-align:left;font-size:13px;"><b>leadStatus:</b> ' + (r.leadStatus || '—') +
+            '<br><b>accountMID:</b> ' + (r.accountMID || '—') + '<br><b>isActive:</b> ' + r.isActive + '</div>',
+      icon: r.isActive ? 'success' : 'info', confirmButtonColor: '#1A6FD4' });
+  } catch (e) {
+    Swal.fire({ title: 'Status check failed', text: e.message, icon: 'error', confirmButtonColor: '#1A6FD4' });
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync-alt mr-1"></i>Check Status';
+  }
 }
 </script>
 </body>
