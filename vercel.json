@@ -1,5 +1,13 @@
 {
   "buildCommand": null,
   "outputDirectory": ".",
-  "framework": null
+  "framework": null,
+  "redirects": [
+    { "source": "/", "destination": "/onboarding.html", "permanent": false },
+    {
+      "source": "/((?!onboarding\\.html|docusign-preview\\.html).*)",
+      "destination": "/onboarding.html",
+      "permanent": false
+    }
+  ]
 }
