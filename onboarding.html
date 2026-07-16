@@ -175,14 +175,15 @@
     <div class="step-item"        id="si-6"><div class="step-circle">6</div><div class="step-label">Banking<br>Details</div></div>
     <div class="step-item"        id="si-7"><div class="step-circle">7</div><div class="step-label">Owner /<br>Principal</div></div>
     <div class="step-item"        id="si-8"><div class="step-circle">8</div><div class="step-label">Documents</div></div>
-    <div class="step-item"        id="si-9"><div class="step-circle"><i class="fas fa-paper-plane" style="font-size:11px;"></i></div><div class="step-label">Review &amp;<br>Submit</div></div>
+    <div class="step-item"        id="si-9"><div class="step-circle">9</div><div class="step-label">Terminal<br><span style="font-size:9px;color:#adb5bd;">(optional)</span></div></div>
+    <div class="step-item"        id="si-10"><div class="step-circle"><i class="fas fa-paper-plane" style="font-size:11px;"></i></div><div class="step-label">Review &amp;<br>Submit</div></div>
   </div>
 
   <!-- ═══ STEP 1 — Business Info ═══ -->
   <div class="card wizard-card" id="step-1">
     <div class="card-header">
       <div class="step-title">Business Information</div>
-      <div class="step-subtitle">Step 1 of 9 — Basic details about the school / merchant</div>
+      <div class="step-subtitle">Step 1 of 10 — Basic details about the school / merchant</div>
     </div>
     <div class="card-body">
       <div class="row">
@@ -279,7 +280,7 @@
   <div class="card wizard-card" id="step-2" style="display:none;">
     <div class="card-header">
       <div class="step-title">Contact &amp; Address</div>
-      <div class="step-subtitle">Step 2 of 9 — Primary contact and business addresses</div>
+      <div class="step-subtitle">Step 2 of 10 — Primary contact and business addresses</div>
     </div>
     <div class="card-body">
       <p class="font-weight-bold text-uppercase" style="font-size:11px; color:#718096; letter-spacing:.5px;">Primary Contact</p>
@@ -375,7 +376,7 @@
   <div class="card wizard-card" id="step-3" style="display:none;">
     <div class="card-header">
       <div class="step-title">Processing Metrics</div>
-      <div class="step-subtitle">Step 3 of 9 — Estimated volumes, used by PayArc underwriting to assess risk</div>
+      <div class="step-subtitle">Step 3 of 10 — Estimated volumes, used by PayArc underwriting to assess risk</div>
     </div>
     <div class="card-body">
       <div class="info-box mb-4">
@@ -460,7 +461,7 @@
   <div class="card wizard-card" id="step-4" style="display:none;">
     <div class="card-header">
       <div class="step-title">Questionnaire</div>
-      <div class="step-subtitle">Step 4 of 9 — Required only when MotoPct ≥ 30. Automatically skipped for in-person-only schools.</div>
+      <div class="step-subtitle">Step 4 of 10 — Required only when MotoPct ≥ 30. Automatically skipped for in-person-only schools.</div>
     </div>
     <div class="card-body">
       <div class="row">
@@ -539,7 +540,7 @@
   <div class="card wizard-card" id="step-5" style="display:none;">
     <div class="card-header">
       <div class="step-title">Pricing Model</div>
-      <div class="step-subtitle">Step 5 of 9 — Rate structure from the Spark Membership–PayArc contract</div>
+      <div class="step-subtitle">Step 5 of 10 — Rate structure from the Spark Membership–PayArc contract</div>
     </div>
     <div class="card-body">
       <div class="info-box mb-3" style="font-size:12.5px;">
@@ -565,7 +566,7 @@
   <div class="card wizard-card" id="step-6" style="display:none;">
     <div class="card-header">
       <div class="step-title">Banking Details</div>
-      <div class="step-subtitle">Step 6 of 9 — School's bank account where PayArc deposits settled funds</div>
+      <div class="step-subtitle">Step 6 of 10 — School's bank account where PayArc deposits settled funds</div>
     </div>
     <div class="card-body">
       <div class="row">
@@ -596,7 +597,7 @@
   <div class="card wizard-card" id="step-7" style="display:none;">
     <div class="card-header">
       <div class="step-title">Owner / Principal</div>
-      <div class="step-subtitle">Step 7 of 9 — Signing owner who holds 51%+. PayArc sends DocuSign merchant agreement to this person.</div>
+      <div class="step-subtitle">Step 7 of 10 — Signing owner who holds 51%+. PayArc sends DocuSign merchant agreement to this person.</div>
     </div>
     <div class="card-body">
       <div class="docusign-box mb-4">
@@ -703,7 +704,7 @@
   <div class="card wizard-card" id="step-8" style="display:none;">
     <div class="card-header">
       <div class="step-title">Documents</div>
-      <div class="step-subtitle">Step 8 of 9 — Uploaded as base64-encoded PNG or PDF via POST /v1/agent-hub/apply/add-documents</div>
+      <div class="step-subtitle">Step 8 of 10 — Uploaded as base64-encoded PNG or PDF via POST /v1/agent-hub/apply/add-documents</div>
     </div>
     <div class="card-body">
       <div class="info-box mb-3">
@@ -743,15 +744,267 @@
     </div>
     <div class="wizard-nav">
       <button class="btn btn-secondary" onclick="prevStep()"><i class="fas fa-arrow-left mr-1"></i>Back</button>
+      <button class="btn btn-primary" onclick="nextStep()">Next — Terminal Setup <i class="fas fa-arrow-right ml-1"></i></button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 9 — Terminal Setup (optional) ═══ -->
+  <div class="card wizard-card" id="step-9" style="display:none;">
+    <div class="card-header">
+      <div class="step-title">Terminal Setup <span style="font-size:12px;font-weight:400;color:#718096;">(optional)</span></div>
+      <div class="step-subtitle">Step 9 of 10 — Order a new physical terminal. Sent to PayArc as the <code>TSQuestionery</code> object in Add Lead.</div>
+    </div>
+    <div class="card-body">
+      <div class="info-box mb-3">
+        <i class="fas fa-info-circle mr-1" style="color:#1A6FD4;"></i>
+        Terminal setup is <strong>optional</strong>. If the school wants a card-present device (tap / chip / swipe), order it here and PayArc ships it pre-configured. Leave off for software/online-only schools.
+      </div>
+
+      <div class="custom-control custom-checkbox mb-3">
+        <input type="checkbox" class="custom-control-input" id="chk-wantsTerminal" onchange="toggleTerminal(this)">
+        <label class="custom-control-label" for="chk-wantsTerminal" style="font-size:14px;font-weight:600;">
+          Yes — order a new terminal for this school
+        </label>
+      </div>
+
+      <div id="terminal-fields" style="display:none;">
+        <div class="row">
+          <div class="col-md-4 form-group">
+            <label>Terminal Maker <span class="required-star">*</span></label>
+            <div class="field-name">TerminalEmvQuantity (maker)</div>
+            <select class="form-control" id="f-termMaker" onchange="updateTerminalModels()">
+              <option value="pax">PAX</option>
+              <option value="dejavoo">Dejavoo</option>
+              <option value="mobileReaders">Mobile Reader</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Model <span class="required-star">*</span></label>
+            <div class="field-name">TerminalEmvQuantity (model)</div>
+            <select class="form-control" id="f-termModel"></select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Quantity <span class="required-star">*</span></label>
+            <div class="field-name">TerminalEmvQuantity (qty)</div>
+            <input type="number" class="form-control" id="f-termQty" value="1" min="1" max="20">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 form-group">
+            <label>Terminal Type <span class="required-star">*</span></label>
+            <div class="field-name">TerminalType</div>
+            <select class="form-control" id="f-termType" onchange="toggleTerminalType()">
+              <option value="emv">EMV (PayArc-supplied)</option>
+              <option value="3rdParty">3rd-party terminal</option>
+            </select>
+          </div>
+          <div class="col-md-8 form-group" id="term-3rdparty-wrap" style="display:none;">
+            <label>3rd-party terminal description</label>
+            <div class="field-name">TerminalType3rdParty</div>
+            <input type="text" class="form-control" id="f-term3rdParty" maxlength="256" placeholder="Make / model of the existing terminal">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 form-group">
+            <label>Gateway <span class="required-star">*</span></label>
+            <div class="field-name">TerminalGateway</div>
+            <select class="form-control" id="f-termGateway">
+              <option value="payarc">PayArc</option>
+              <option value="nmi">NMI</option>
+              <option value="authorize.net">Authorize.net</option>
+              <option value="ePay">USAePay (ePay)</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Gateway Setup By <span class="required-star">*</span></label>
+            <div class="field-name">TerminalGatewaySetup</div>
+            <select class="form-control" id="f-termGatewaySetup">
+              <option value="payarc">PayArc</option>
+              <option value="agent">Agent</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>PAX POS Method <span class="required-star">*</span></label>
+            <div class="field-name">TerminalPaxPos</div>
+            <select class="form-control" id="f-termPaxPos">
+              <option value="payarc">PayArc</option>
+              <option value="SwipeSimple">SwipeSimple</option>
+              <option value="TSYSTransit">TSYS Transit</option>
+              <option value="TSYSSierra">TSYS Sierra</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 form-group">
+            <label>Connection <span class="required-star">*</span></label>
+            <div class="field-name">TerminalPrimaryMethod</div>
+            <select class="form-control" id="f-termConnection">
+              <option value="wifi">Wi-Fi</option>
+              <option value="ethernet">Ethernet</option>
+              <option value="4g">4G</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Use Curv POS tools? <span class="required-star">*</span></label>
+            <div class="field-name">MerchantCurvPos</div>
+            <select class="form-control" id="f-termCurv">
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>PIN Debit <span class="required-star">*</span></label>
+            <div class="field-name">TerminalPinDebit</div>
+            <select class="form-control" id="f-termPinDebit">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>EBT / FNS <span class="required-star">*</span></label>
+            <div class="field-name">TerminalEbtFns</div>
+            <select class="form-control" id="f-termEbt">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+        </div>
+
+        <hr>
+        <p class="font-weight-bold" style="font-size:13px;margin-bottom:8px;">Receipt &amp; Transaction Options</p>
+        <div class="row">
+          <div class="col-md-4 form-group">
+            <label>Tips</label>
+            <div class="field-name">TerminalOptionTip</div>
+            <select class="form-control" id="f-termTip">
+              <option value="no">No</option>
+              <option value="tips">Tips</option>
+              <option value="both">Both</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Signature line</label>
+            <div class="field-name">TerminalOptionSignature</div>
+            <select class="form-control" id="f-termSignature">
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Track clerks</label>
+            <div class="field-name">TerminalTrackClerks</div>
+            <select class="form-control" id="f-termClerks">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Invoice / order #</label>
+            <div class="field-name">TerminalOptionInvoice</div>
+            <select class="form-control" id="f-termInvoice">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Auto-close batch</label>
+            <div class="field-name">TerminalBatchAutoClose</div>
+            <select class="form-control" id="f-termBatch" onchange="toggleTerminalBatch()">
+              <option value="no">No (manual)</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group" id="term-batchtime-wrap" style="display:none;">
+            <label>Auto-close time (HH:MM)</label>
+            <div class="field-name">TerminalBatchAutoTime</div>
+            <input type="text" class="form-control" id="f-termBatchTime" placeholder="23:00">
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Add tax on terminal?</label>
+            <div class="field-name">TerminalOptionTax</div>
+            <select class="form-control" id="f-termTax" onchange="toggleTerminalTax()">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group term-tax-wrap" style="display:none;">
+            <label>City tax %</label>
+            <div class="field-name">TerminalCityTaxPct</div>
+            <input type="number" class="form-control" id="f-termCityTax" value="0" min="0" max="100" step="0.01">
+          </div>
+          <div class="col-md-4 form-group term-tax-wrap" style="display:none;">
+            <label>State tax %</label>
+            <div class="field-name">TerminalStateTaxPct</div>
+            <input type="number" class="form-control" id="f-termStateTax" value="0" min="0" max="100" step="0.01">
+          </div>
+          <div class="col-md-6 form-group">
+            <label>Receipt header</label>
+            <div class="field-name">TerminalHeader</div>
+            <input type="text" class="form-control" id="f-termHeader" maxlength="50" placeholder="Chicago Fitness Club">
+          </div>
+          <div class="col-md-6 form-group">
+            <label>Receipt footer</label>
+            <div class="field-name">TerminalFooter</div>
+            <input type="text" class="form-control" id="f-termFooter" maxlength="50" placeholder="Thank you!">
+          </div>
+        </div>
+
+        <hr>
+        <p class="font-weight-bold" style="font-size:13px;margin-bottom:8px;">Delivery</p>
+        <div class="row">
+          <div class="col-md-4 form-group">
+            <label>Ship to <span class="required-star">*</span></label>
+            <div class="field-name">TerminalDeployment</div>
+            <select class="form-control" id="f-termDeployment" onchange="toggleTerminalDeployment()">
+              <option value="merchant">Merchant address</option>
+              <option value="agent">Agent address</option>
+              <option value="other">Other address</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Preferred shipping</label>
+            <div class="field-name">TerminalShippingPreferred</div>
+            <select class="form-control" id="f-termShipPref">
+              <option value="ground">Ground</option>
+              <option value="2ndDay">2nd Day</option>
+              <option value="saturday">Saturday</option>
+            </select>
+          </div>
+        </div>
+        <div id="term-shipping-wrap" style="display:none;">
+          <div class="row">
+            <div class="col-md-6 form-group"><label>Addressee name</label><div class="field-name">TerminalShippingName</div><input type="text" class="form-control" id="f-termShipName" maxlength="50"></div>
+            <div class="col-md-6 form-group"><label>Contact name</label><div class="field-name">TerminalShippingContactName</div><input type="text" class="form-control" id="f-termShipContact" maxlength="100"></div>
+            <div class="col-md-6 form-group"><label>Address</label><div class="field-name">TerminalShippingAddress</div><input type="text" class="form-control" id="f-termShipAddr" maxlength="32"></div>
+            <div class="col-md-3 form-group"><label>City</label><div class="field-name">TerminalShippingCity</div><input type="text" class="form-control" id="f-termShipCity" maxlength="13"></div>
+            <div class="col-md-1 form-group"><label>State</label><div class="field-name">TerminalShippingState</div><input type="text" class="form-control" id="f-termShipState" maxlength="2"></div>
+            <div class="col-md-2 form-group"><label>ZIP</label><div class="field-name">TerminalShippingZipCode</div><input type="text" class="form-control" id="f-termShipZip" maxlength="6"></div>
+            <div class="col-md-6 form-group"><label>Phone</label><div class="field-name">TerminalShippingPhoneNo</div><input type="text" class="form-control" id="f-termShipPhone" maxlength="10"></div>
+          </div>
+        </div>
+
+        <div class="locked-box mt-2">
+          <i class="fas fa-info-circle mr-1 text-muted"></i>
+          Sent as the <code>TSQuestionery</code> object (top-level, alongside <code>Lead</code> / <code>Owners</code>) in the Add Lead call. Source: <code>Add Traditional Lead.md</code> → TSQuestionery.
+          <br><span style="color:#718096;">Note: the schema lists the Dejavoo-specific fields as required regardless of maker; the backend defaults them for a PAX / mobile order (pending PayArc confirmation).</span>
+        </div>
+      </div>
+    </div>
+    <div class="wizard-nav">
+      <button class="btn btn-secondary" onclick="prevStep()"><i class="fas fa-arrow-left mr-1"></i>Back</button>
       <button class="btn btn-primary" onclick="nextStep()">Next — Review &amp; Submit <i class="fas fa-arrow-right ml-1"></i></button>
     </div>
   </div>
 
-  <!-- ═══ STEP 9 — Review & Submit ═══ -->
-  <div class="card wizard-card" id="step-9" style="display:none;">
+  <!-- ═══ STEP 10 — Review & Submit ═══ -->
+  <div class="card wizard-card" id="step-10" style="display:none;">
     <div class="card-header">
       <div class="step-title">Review &amp; Submit</div>
-      <div class="step-subtitle">Step 9 of 9 — Confirm all details, then submit to PayArc</div>
+      <div class="step-subtitle">Step 10 of 10 — Confirm all details, then submit to PayArc</div>
     </div>
     <div class="card-body">
       <div class="row mb-3" id="review-summary"></div>
@@ -885,7 +1138,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 <script>
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 10;
 let currentStep = 1;
 
 // ── Demo data ───────────────────────────────────────────────────────────────
@@ -974,10 +1227,10 @@ function goToStep(n) {
   si2.classList.remove('done', 'skipped');
   si2.classList.add('active');
   si2.querySelector('.step-circle').innerHTML =
-    currentStep === 9 ? '<i class="fas fa-paper-plane" style="font-size:11px;"></i>' : currentStep;
+    currentStep === 10 ? '<i class="fas fa-paper-plane" style="font-size:11px;"></i>' : currentStep;
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (currentStep === 9) buildReview();
+  if (currentStep === 10) buildReview();
 }
 
 function motoPct() {
@@ -1004,7 +1257,7 @@ function prevStep() {
   const si = document.getElementById('si-' + currentStep);
   si.classList.remove('active', 'done');
   si.querySelector('.step-circle').innerHTML =
-    currentStep === 9 ? '<i class="fas fa-paper-plane" style="font-size:11px;"></i>' : currentStep;
+    currentStep === 10 ? '<i class="fas fa-paper-plane" style="font-size:11px;"></i>' : currentStep;
 
   let target = currentStep - 1;
   // Skip Questionnaire (step 4) going backwards if MotoPct < 30
@@ -1017,7 +1270,7 @@ function prevStep() {
   si2.classList.remove('done', 'skipped');
   si2.classList.add('active');
   si2.querySelector('.step-circle').innerHTML =
-    currentStep === 9 ? '<i class="fas fa-paper-plane" style="font-size:11px;"></i>' : currentStep;
+    currentStep === 10 ? '<i class="fas fa-paper-plane" style="font-size:11px;"></i>' : currentStep;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1030,7 +1283,7 @@ const REQUIRED = {
   5: [],
   6: ['f-bankAccNo','f-bankRouting'],
   7: ['f-ownerFirst','f-ownerLast','f-ownerTitle','f-ownerPct','f-ownerEmail','f-ownerPhone','f-ownerAddr','f-ownerCity','f-ownerState','f-ownerZip','f-ownerDob','f-ownerSsn','f-ownerDlNo','f-ownerDlState'],
-  8: [], 9: [],
+  8: [], 9: [], 10: [],
 };
 
 function validateStep(n) {
@@ -1131,6 +1384,26 @@ function onDocUpload(input, areaId, nameId) {
   }
 }
 
+// ── Terminal setup (Step 9, optional) ─────────────────────────────────────────
+const TERMINAL_MODELS = {
+  pax:          [['a80','A80'],['a920','A920'],['a920pro','A920 Pro'],['sp30','SP30'],['sp300','SP300']],
+  dejavoo:      [['qd2','QD2'],['qd3','QD3'],['qd2wifi','QD2 Wi-Fi'],['qd4','QD4'],['qd5','QD5'],['z11','Z11'],['z8','Z8'],['z9','Z9']],
+  mobileReaders:[['b250','B250'],['bbpos','BBPOS'],['idynamo5','iDynamo 5']],
+};
+function toggleTerminal(cb) {
+  document.getElementById('terminal-fields').style.display = cb.checked ? '' : 'none';
+  if (cb.checked && !document.getElementById('f-termModel').options.length) updateTerminalModels();
+}
+function updateTerminalModels() {
+  const maker = document.getElementById('f-termMaker').value;
+  document.getElementById('f-termModel').innerHTML =
+    (TERMINAL_MODELS[maker] || []).map(m => '<option value="' + m[0] + '">' + m[1] + '</option>').join('');
+}
+function toggleTerminalType()       { document.getElementById('term-3rdparty-wrap').style.display = document.getElementById('f-termType').value === '3rdParty' ? '' : 'none'; }
+function toggleTerminalBatch()      { document.getElementById('term-batchtime-wrap').style.display = document.getElementById('f-termBatch').value === 'yes' ? '' : 'none'; }
+function toggleTerminalTax()        { document.querySelectorAll('.term-tax-wrap').forEach(function(e){ e.style.display = document.getElementById('f-termTax').value === 'yes' ? '' : 'none'; }); }
+function toggleTerminalDeployment() { document.getElementById('term-shipping-wrap').style.display = document.getElementById('f-termDeployment').value === 'other' ? '' : 'none'; }
+
 // ── Helper ───────────────────────────────────────────────────────────────────
 function fv(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
 
@@ -1228,6 +1501,53 @@ function buildPayload() {
     };
   }
 
+  // TSQuestionery (terminal setup) at TOP LEVEL — only when the school opts to order a terminal.
+  // Sibling of Lead/Owners; optional per the Add Lead spec. Source: Add Traditional Lead.md → TSQuestionery.
+  const wantsTerminal = document.getElementById('chk-wantsTerminal') && document.getElementById('chk-wantsTerminal').checked;
+  if (wantsTerminal) {
+    const maker = fv('f-termMaker'), model = fv('f-termModel'), qty = parseInt(fv('f-termQty')) || 1;
+    const emv = {}; emv[maker] = {}; emv[maker][model] = qty;
+    const ts = {
+      MerchantCurvPos:         parseInt(fv('f-termCurv')) || 0,
+      TerminalType:            [fv('f-termType')],
+      TerminalGatewaySetup:    fv('f-termGatewaySetup'),
+      TerminalGateway:         fv('f-termGateway'),
+      TerminalPrimaryMethod:   fv('f-termConnection'),
+      TerminalEmvQuantity:     emv,
+      TerminalPaxPos:          fv('f-termPaxPos'),
+      TerminalPinDebit:        fv('f-termPinDebit'),
+      TerminalEbtFns:          fv('f-termEbt'),
+      // Dejavoo-specific fields are marked required by the schema regardless of maker; defaulted for PAX/mobile orders (pending PayArc confirmation).
+      TerminalDejavooPosDebit: 'retail',
+      TerminalDejavooPosCash:  'retail',
+      TerminalDejavooPosGift:  'retail',
+      TerminalBatchAutoClose:  fv('f-termBatch'),
+      TerminalTrackClerks:     fv('f-termClerks'),
+      TerminalOptionInvoice:   fv('f-termInvoice'),
+      TerminalOptionTax:       fv('f-termTax'),
+      TerminalCityTaxPct:      parseFloat(fv('f-termCityTax')) || 0,
+      TerminalStateTaxPct:     parseFloat(fv('f-termStateTax')) || 0,
+      TerminalOptionSignature: fv('f-termSignature'),
+      TerminalOptionTip:       fv('f-termTip'),
+      TerminalDeployment:      fv('f-termDeployment'),
+    };
+    if (fv('f-termType') === '3rdParty' && fv('f-term3rdParty')) ts.TerminalType3rdParty = fv('f-term3rdParty');
+    if (fv('f-termBatch') === 'yes' && fv('f-termBatchTime')) ts.TerminalBatchAutoTime = fv('f-termBatchTime');
+    if (fv('f-termHeader')) ts.TerminalHeader = fv('f-termHeader');
+    if (fv('f-termFooter')) ts.TerminalFooter = fv('f-termFooter');
+    if (fv('f-termShipPref')) ts.TerminalShippingPreferred = fv('f-termShipPref');
+    if (fv('f-termDeployment') === 'other') {
+      ts.TerminalShippingName        = fv('f-termShipName');
+      ts.TerminalShippingContactName = fv('f-termShipContact');
+      ts.TerminalShippingAddress     = fv('f-termShipAddr');
+      ts.TerminalShippingCity        = fv('f-termShipCity');
+      ts.TerminalShippingState       = fv('f-termShipState');
+      ts.TerminalShippingZipCode     = fv('f-termShipZip');
+      ts.TerminalShippingPhoneNo     = fv('f-termShipPhone');
+    }
+    payload.TSQuestionery = ts;
+  }
+
   return payload;
 }
 
@@ -1267,6 +1587,15 @@ function buildReview() {
       ['DL State',          fv('f-ownerDlState')],
     ]},
   ];
+  if (document.getElementById('chk-wantsTerminal') && document.getElementById('chk-wantsTerminal').checked) {
+    sections.push({ title:'Terminal (TSQuestionery)', cols:[
+      ['Device',     fv('f-termMaker')+' '+fv('f-termModel')+' × '+(fv('f-termQty')||'1')],
+      ['Type',       fv('f-termType')],
+      ['Gateway',    fv('f-termGateway')+' (setup: '+fv('f-termGatewaySetup')+')'],
+      ['Connection', fv('f-termConnection')],
+      ['Ship to',    fv('f-termDeployment')],
+    ]});
+  }
   let html = '';
   sections.forEach(s => {
     let rows = s.cols.map(([l,v]) =>
